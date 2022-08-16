@@ -9,10 +9,6 @@ objectives:
 keypoints:
 - "This is not a lecture"
 ---
-## How do I install software on an HPC
-- Containers (pull/use)
-- Environments (make)
-- Already built modules (load)
 
 ## How do I run tasks on an HPC
 - SLURM
@@ -22,3 +18,14 @@ keypoints:
 - Job dependencies
 - Array jobs
 - Flavours of nodes and different partitions/queues (revisit)
+
+## How do I install software on an HPC
+- Containers (pull/use)
+- Environments (make)
+- Already built modules (load)
+
+## Benchmarking
+- Benchmarking and tracking resource usage
+- Python - scalene
+- Nextflow - report.html
+- generic / other?
