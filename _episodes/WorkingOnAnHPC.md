@@ -18,6 +18,7 @@ keypoints:
 - Job dependencies
 - Array jobs
 - Flavours of nodes and different partitions/queues (revisit)
+- How to create a workflow using templates (brief because Nextflow will replace this)
 
 ## How do I install software on an HPC
 - Containers (pull/use)
