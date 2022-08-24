@@ -29,7 +29,9 @@ See instructions on the [home page]({{page.root}}#Setup)
 You will need to have a login to the OzSTAR supercomputer in order to complete some of the exercises for this course.
 See [these instructions](https://supercomputing.swin.edu.au/docs/1-getting_started/Accounts.html) for how you can obtain an account.
 
-Once you have an account you'll need to join the group TODO.
+Once you have an account you'll need to [request to join](https://supercomputing.swin.edu.au/account-management/project_join_request) the group `oz983`.
+
+Obtaining an account can take up to 2 days, joining a project will be faster because it only requires the approval of the group admin which is [Paul Hancock](mailto:paul.hancock@curtin.edu.au).
 
 ## Assumed knowledge
 - (linux) command line / bash [SWC Lesson](https://swcarpentry.github.io/shell-novice/), [ADACS Lesson](https://adacs.org.au/courses/introduction-to-bash/)
