@@ -24,3 +24,5 @@ keypoints:
 - With bash
 - With Python
 - Others (links to C/Fortran material)
+
+Some content can be cribbed from [here](https://adacs.org.au/wp-content/uploads/2016/02/slurm.pdf)
