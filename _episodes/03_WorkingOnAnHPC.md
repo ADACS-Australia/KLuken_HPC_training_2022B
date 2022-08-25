@@ -96,19 +96,230 @@ Currently Loaded Modules:
 
 Effectively we start of with just enough tools to submit and monitor jobs.
 
-Use `sinfo` to see what resources are available.
-Check out [this FAQ](https://supercomputing.swin.edu.au/docs/1-getting_started/FAQ.html#what-s-with-the-weird-machine-names) for what the node names mean
+Remember from last lesson, we need to use a scheduler in order for our jobs to be run on the compute nodes:
+![JobQueuing]({{page.root}}{% link fig/queueing_infog.png %})
 
+
+### Querying the queue system
+Before we run any jobs we need to see what resources are available.
+One way to do this is using the `sinfo` command which will report information similar to:
+
+~~~
+[phancock@farnarkle2 oz983]$ sinfo
+PARTITION   AVAIL  TIMELIMIT  NODES  STATE NODELIST
+skylake*       up 7-00:00:00      2   resv john[1-2]
+skylake*       up 7-00:00:00    114    mix bryan[1-8],john[3-7,9-21,23-110]
+skylake*       up 7-00:00:00      2  alloc john[8,22]
+skylake-gpu    up 7-00:00:00      2   resv john[1-2]
+skylake-gpu    up 7-00:00:00    114    mix bryan[1-8],john[3-7,9-21,23-110]
+skylake-gpu    up 7-00:00:00      2  alloc john[8,22]
+knl            up 7-00:00:00      4   unk* gina[1-4]
+sstar          up 7-00:00:00     10 drain* sstar[107-109,122,130,140,146-147,155,164]
+sstar          up 7-00:00:00      1   unk* sstar154
+sstar          up 7-00:00:00      2   resv sstar[024,151]
+sstar          up 7-00:00:00     45  alloc sstar[011-023,025-032,110-121,123-129,152,165-167,301]
+sstar          up 7-00:00:00     31   idle sstar[101-106,131-139,141-145,148-149,153,156-163]
+gstar          up 7-00:00:00      2 drain* gstar[101,204]
+gstar          up 7-00:00:00     49   unk* gstar[011-059]
+gstar          up 7-00:00:00      3   idle gstar[201-203]
+datamover      up 1-00:00:00      4   idle data-mover[01-04]
+osg            up 7-00:00:00     10   idle clarke[1-10]
+~~~
+{: .output}
+
+The columns are as follows:
+1. The **PARTITION** information.
+A partition is a logical group of nodes that have been collected together for some common purpose.
+You can think of a partition as a "queue" on a cluster.
+Different partitions will have different intended uses.
+See the [documentation](https://supercomputing.swin.edu.au/docs/2-ozstar/oz-partition.html#available-partitions) for a description of the different partitions.
+
+2. The **AVAIL**ability of the given partition. Up = useable, down/drain/inact = not usable.
+
+3. The maximum **TIMELIMIT**  that jobs can have in this queue.
+Each job can request up to this amount of time.
+This is not cpu time but regular time measured by a clock on the wall (a.k.a wall time).
+
+4. The number of **NODES** in this current configuration.
+
+6. The **STATE** of each node. 
+   1. Reserved - not in use, but reserved for future use
+   2. Allocated - in use will return to idle when complete
+   3. Mix - Nodes which are partially allocated and partially idle
+   4. Idle - not in use
+   5. Unknown - ?
+   6. Draining - in use but will not be idle when complete (eg going into maintenance or shutdown)
+
+7. **NODELIST** A list of node names (shortened). Check out [this FAQ](https://supercomputing.swin.edu.au/docs/1-getting_started/FAQ.html#what-s-with-the-weird-machine-names) for what the node names mean.
+
+
+The table has been grouped so that nodes in the same partition and same state will appear on a single line.
+In the example above, you can see that the partition called `datamover` has 4 nodes available, and all of them are currently idle.
+The `skylake` partition has a total of 118 nodes.
+Note that the nodes called `bryan[1-8]` appear in both the `skylake` and `skylake-gpu` partition, while the `gina[1-4]` nodes are only available in the `knl` partition. 
+
+The `sinfo` command tells us about the state of the different partitions.
+If we want to learn about the jobs that have been submitted then we can use `squeue`.
+This will show us what jobs are currently in the queue system.
+
+~~~
+> squeue
+             JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+          29254695 datamover dd_oss.b  rhumble PD       0:00      1 (Dependency)
+          29173490 datamover dd_oss.b  rhumble PD       0:00      1 (Dependency)
+          29054140 datamover dd_oss.b  rhumble PD       0:00      1 (Dependency)
+        29242343_0   skylake n_polych bgonchar PD       0:00      4 (Resources)
+          29279155   skylake full.195     qliu PD       0:00      5 (Priority)
+          29054138 skylake-g dd.batch  rhumble PD       0:00      1 (Dependency)
+          29290681 skylake-g  KGAT_11      bli  R    1:36:57      1 john96
+          29291743 skylake-g      zsh  tdavies  R    1:02:26      1 john8
+          29291493 skylake-g Train_NF cchatter  R    1:08:59      1 bryan1
+          29054139     sstar dd_oss.b  rhumble PD       0:00      1 (Dependency)
+          29292308     sstar SanH2-rD mmanatun  R       8:02     31 sstar[101-106,131-139,141-145,148-149,153,156-163]
+          29286615     sstar   0_full avajpeyi  R    2:54:14      1 sstar301
+~~~
+{: .output}
+
+The list above shows us the jobs that are running.
+Each job has a unique **JOBID**.
+Jobs that are waiting to start will have a **TIME** of 0:00, and then a reason in the final column.
+Jobs that are currently running will have a TIME that shows the *remaining* time for the job, and a **NODELIST** of which nodes the jobs are running on.
+
+Running `squeue` will often give you a *very long list* of jobs, far too many to be useful.
+Using `squeue -u ${USER}` will limit the list to only *your* jobs.
+
+
+## Running Jobs
+There are two types of jobs that can be run: either a batch job where SLURM executes a script on your behalf, or an interactive job whereby you are given direct access to a compute node and you can do things interactively.
+
+
+### Interactive jobs
+We will start with a simple **interactive** job.
 Use `salloc` to start an interactive job.
-Load the python module with `module load python/3.8.5`
-Run some basic python script.
-Run  `squeue -u ${USER}` to see the status of your jobs.
-exit the interactive job with ^d or `exit` and then have a nother look at the queue.
-Look in your home directory for stdout and stderr logs.
+You should see a sequence of output as follows:
+~~~
+[phancock@farnarkle2 oz983]$ salloc
+salloc: Pending job allocation 29294281
+salloc: job 29294281 queued and waiting for resources
+salloc: job 29294281 has been allocated resources
+salloc: Granted job allocation 29294281
+salloc: Waiting for resource configuration
+salloc: Nodes john16 are ready for job
+[phancock@farnarkle2 oz983]$ ssh john16
+[phancock@john16 ~]$ 
+~~~
+{: .output}
 
-Write a script that will do the same as the above but not in an interactive session.
-Talk about all the SLURM directives.
-Submit the job, watch it run via `squeue`, and then view the logs.
+Note that salloc will create an allocation for us, but not always join us to the relevant node.
+To join the node we can use ssh.
+Note that my command prompt was still `@farnarkle2` (a login node), but i have to join `@john16` to access the allocated resources.
+
+When you finish with an interactive session you can exit it using `exit` or `<ctrl>+d`, however this wont release the resources.
+Run `squeue -u ${USER}` to see the running job, and then use `scancel <JOBID>` to stop the job.
+
+~~~
+[phancock@farnarkle2 oz983]$ squeue -u ${USER}
+             JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+          29294281   skylake interact phancock  R       1:20      1 john16
+[phancock@farnarkle2 oz983]$ scancel 29294281
+salloc: Job allocation 29294281 has been revoked.
+~~~
+{: .output}
+
+Interactive jobs are good for debugging your code, but usually leave the compute node idle whilst you read/think/code.
+Interactive jobs should be used sparingly, in preference of batch jobs.
+
+### Batch jobs
+The most common type of job that you will run on an HPC is a batch job.
+A batch job requires that you have a script that describes all the processing that you will need to do, as well as an estimate of the resources that you'll need.
+With these bits of information the SLURM scheduler can then appropriately assign you resources and execute the work.
+
+Lets run a basic hello world script, watch it run, and then pick apart what happened.
+
+> ## The python script
+> `/fred/oz983/KLuken_HPC_workshop/hello.py`
+> ~~~
+> #! /usr/bin/env python
+> 
+> import os
+> 
+> host = os.environ["HOSTNAME"]
+> print(f"Hello from the world of {host}")
+> ~~~
+> {: .language-python}
+{: .callout}
+
+> ## The bash script
+> `/fred/oz983/KLuken_HPC_workshop/first_script.sh`
+> ~~~
+> #! /usr/bin/env bash
+> #
+> #SBATCH --job-name=hello
+> #SBATCH --output=res.txt
+> #
+> #SBATCH --ntasks=1
+> #SBATCH --time=05:00
+> #SBATCH --mem-per-cpu=200
+> 
+> # load the python module
+> module load python/3.8.5
+> 
+> # move to the directory where the script/data are
+> cd /fred/oz983/KLuken_HPC_workshop 
+> python3 hello.py
+> sleep 120
+> ~~~
+> {: .language-bash}
+{: .callout}
+
+We then submit the batch script to SLURM using the `sbatch` command from our own directory, and view our job list:
+~~~
+[phancock@farnarkle2 phancock]$ sbatch ../KLuken_HPC_workshop/first_script.sh 
+Submitted batch job 29294385
+[phancock@farnarkle2 phancock]$ squeue -u ${USER}
+             JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+          29294385   skylake    hello phancock PD       0:00      1 (Priority)
+~~~
+{: .output}
+
+Initially our jobs is not running because it doesn't have high enough priority, but after a minute or so we see:
+
+~~~
+[phancock@farnarkle2 phancock]$ squeue -u ${USER}
+             JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+          29294385   skylake    hello phancock  R       0:05      1 john3
+~~~
+{: .output}
+
+The script will take a few seconds to run the python script, and then sleep for 2 minutes so that we have a chance to catch it in the queue.
+
+We'll get the out put ina file called `res.txt`, which sits in the directory from which we submitted the sbtach job.
+
+~~~
+[phancock@farnarkle2 phancock]$ more res.txt 
+Hello from the world of john3
+~~~
+{: .output}
+
+Now let's review what we did:
+1. Created a python script which did all the hard work.
+2. Created a bash script which told SLURM about the resources that we needed, and how to invoke our program.
+   1. The `##SBATCH` comments at the top of the bash script are ignored by bash, but are picked up by SLURM.
+      1. `--job-name` is what shows up in the `squeue` listing. It defaults to your script name, but can be renamed here.
+      2. `--output` is the location of the file that will contain all of the `STDOUT` from the running of your program
+      3. `--error` (not used above) is the location of the file that will have the `STDERR` from your program
+      4. `--ntasks` tells SLURM how many tasks you'll be running at once
+      5. `--time` is the (wall) time that this job requires. If your job does not complete in this time it will be killed.
+      6. `--mem-per-cpu` will tell SLURM how much ram is required per cpu (can also use just `--mem`) default is in MB, but you can use gb
+   2. Loaded the software that we'll need using the `module` system
+   3. Moved to the directory which contains the code we are running
+   4. Ran the python code
+   5. Slept for 120 to simulate a job that takes more than a few seconds to run
+3. Submitted the job to the scheduler using `sbatch`
+4. Watched the progress of the job by running `squeue -u ${USER}`
+5. Inspected the ouput once the job completed.
+
+
 
 Talk about job dependencies for making one job run after another.
 Write an example where the first job makes a file, and the second job changes the file.
@@ -131,7 +342,14 @@ Talk about job templates and how to use SED to fill in the template info.
 ## How do I install software on an HPC
 - Environments (make)
 - Already built modules (load)
+
 ### Containers
+[Singularity/Apptainer](https://apptainer.org/)/Docker
+What containers are.
+
+How to use them.
+
+How to build them.
 
 ## Benchmarking
 - Benchmarking and tracking resource usage
