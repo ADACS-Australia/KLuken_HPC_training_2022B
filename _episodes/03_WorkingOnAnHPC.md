@@ -214,15 +214,16 @@ Note that salloc will create an allocation for us, but not always join us to the
 To join the node we can use ssh.
 Note that my command prompt was still `@farnarkle2` (a login node), but i have to join `@john16` to access the allocated resources.
 
-When you finish with an interactive session you can exit it using `exit` or `<ctrl>+d`, however this wont release the resources.
-Run `squeue -u ${USER}` to see the running job, and then use `scancel <JOBID>` to stop the job.
+When you finish with an interactive session you can exit it using `exit` or `<ctrl>+d` to end the ssh session, and then again to exit the job allocation.
 
 ~~~
-[phancock@farnarkle2 oz983]$ squeue -u ${USER}
+[phancock@john16 ~]$ squeue -u ${USER}
              JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
           29294281   skylake interact phancock  R       1:20      1 john16
-[phancock@farnarkle2 oz983]$ scancel 29294281
+[phancock@john16 ~]$ exit
+[phancock@farnarkle2 0z983]$ exit
 salloc: Job allocation 29294281 has been revoked.
+[phancock@farnarkle2 0z983]$
 ~~~
 {: .output}
 
@@ -264,9 +265,10 @@ Lets run a basic hello world script, watch it run, and then pick apart what happ
 > # load the python module
 > module load python/3.8.5
 > 
-> # move to the directory where the script/data are
-> cd /fred/oz983/KLuken_HPC_workshop 
-> python3 hello.py
+> # move to the work directory
+> cd /fred/oz983/${USER}
+> # do the work
+> python3 ../KLuken_HPC_workshop/hello.py | tee hello.txt
 > sleep 120
 > ~~~
 > {: .language-bash}
@@ -302,7 +304,7 @@ Hello from the world of john3
 {: .output}
 
 Now let's review what we did:
-1. Created a python script which did all the hard work.
+1. Created a python script which did all the "hard" work.
 2. Created a bash script which told SLURM about the resources that we needed, and how to invoke our program.
    1. The `##SBATCH` comments at the top of the bash script are ignored by bash, but are picked up by SLURM.
       1. `--job-name` is what shows up in the `squeue` listing. It defaults to your script name, but can be renamed here.
@@ -311,15 +313,94 @@ Now let's review what we did:
       4. `--ntasks` tells SLURM how many tasks you'll be running at once
       5. `--time` is the (wall) time that this job requires. If your job does not complete in this time it will be killed.
       6. `--mem-per-cpu` will tell SLURM how much ram is required per cpu (can also use just `--mem`) default is in MB, but you can use gb
-   2. Loaded the software that we'll need using the `module` system
-   3. Moved to the directory which contains the code we are running
-   4. Ran the python code
-   5. Slept for 120 to simulate a job that takes more than a few seconds to run
+   2. Load the software that we'll need using the `module` system
+   3. Move to the directory which contains the code we are running
+   4. Run the python code and copy the stdout to a file
+   5. Sleep for 120 to simulate a job that takes more than a few seconds to run
 3. Submitted the job to the scheduler using `sbatch`
-4. Watched the progress of the job by running `squeue -u ${USER}`
-5. Inspected the ouput once the job completed.
+4. Watched the progress of the job by running `squeue -u ${USER}` (a few times)
+5. Inspected the ouput once the job completed by viewin `res.txt`.
+
+## Building a workflow
+Once we know how to submit jobs we start thinking about all the jobs that we could run, and quickly we get into a state where we spend all our time writing jobs, submitting them to the queue, monitoring them, and then deciding which jobs need to be done next and submitting them.
+This is time consuming and it's something we should get the computers to do for us.
+If we think about the work that we need to do as discrete jobs, and then join multiple jobs together to form a workflow, then we can implement this workflow on an HPC using the scheduler system.
+
+Below is a generic workflow with just three parts.
+
+![WorkFlow]({{ page.root}}{% link /fig/SimpleFlow.png%})
+
+The purple boxes represent work that needs to be done, and the arrows represent dependency of tasks.
+You cannot process the data until you have retrieved the data, and you have to process the data *before* you do the cleanp.
+
+In the above diagram we would say that there is a **dependency** between the tasks, as indicated by the arrows.
+Slurm allows us to create these dependency links when we schedule jobs so that we don't have to sit around waiting for something to complete before submitting the next job.
+When we schedule a job with `sbatch` we can use the `-d` or `--dependency` flag to indicate these links between our jobs.
+
+> ## Dependency example
+> Try the following in your directory.
+> Remember to replace the `123456` with the actual job id that is returned to you
+> ~~~
+> [user@host mydir]$ sbatch ../KLuken_HPC_workshop/first_script.sh
+> Submitted batch job 123456
+> [user@host mydir]$ sbatch -d after:123456 ../KLuken_HPC_workshop/second_script.sh
+> [user@host mydir]$ squeue -u ${USER}
+> ~~~
+> {: .output}
+> > ## Example output
+> > ~~~
+> > [phancock@farnarkle1 phancock]$ sbatch ../KLuken_HPC_workshop/first_script.sh
+> > Submitted batch job 29442667
+> > [phancock@farnarkle1 phancock]$ sbatch -d after:29442667 ../KLuken_HPC_workshop/second_script.sh
+> > Submitted batch job 29442668
+> > [phancock@farnarkle1 phancock]$ squeue -u ${USER}
+> >              JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+> >           29442668   skylake no_hello phancock PD       0:00      1 (Dependency)
+> >           29442667   skylake    hello phancock PD       0:00      1 (Priority)
+> > ~~~
+> >{: .output}
+> {: .solution}
+{: .challenge}
+
+In the above example you'll see that the first job submitted was not running due to `(Priority)`.
+This means that the job in in the queue but that it is waiting for other jobs to complete before it can be run.
+The second job, however, is not running due to `(Dependency)`, and this is because it's waiting for the first job to complete.
+
+~~~
+[phancock@farnarkle1 phancock]$ sbatch --begin=now+120 ../KLuken_HPC_workshop/start.sh
+Submitted batch job 29442061
+[phancock@farnarkle1 phancock]$ sbatch -d afterok:29442061 ../KLuken_HPC_workshop/branch.sh
+Submitted batch job 29442065
+[phancock@farnarkle1 phancock]$ sbatch -d afterok:29442065 ../KLuken_HPC_workshop/collect.sh
+Submitted batch job 29442066
+[phancock@farnarkle1 phancock]$ watch squeue -u ${USER}
+             JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+          29442061   skylake    start phancock PD       0:00      1 (BeginTime)
+          29442066   skylake  collect phancock PD       0:00      1 (Dependency)
+    29442065_[1-6]   skylake     ngon phancock PD       0:00      1 (Dependency)
 
 
+             JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+          29442061   skylake    start phancock CG       0:04      1 john31
+          29442066   skylake  collect phancock PD       0:00      1 (Dependency)
+    29442065_[1-6]   skylake     ngon phancock PD       0:00      1 (Dependency)
+
+
+             JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+        29442065_6   skylake     ngon phancock PD       0:00      1 (Priority)
+        29442065_5   skylake     ngon phancock PD       0:00      1 (Priority)
+        29442065_4   skylake     ngon phancock PD       0:00      1 (Priority)
+        29442065_3   skylake     ngon phancock PD       0:00      1 (Priority)
+        29442065_2   skylake     ngon phancock PD       0:00      1 (Priority)
+          29442066   skylake  collect phancock PD       0:00      1 (Dependency)
+        29442065_1   skylake     ngon phancock PD       0:00      1 (Priority)
+
+             JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+          29442066   skylake  collect phancock PD       0:00      1 (Priority)
+
+             JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+~~~
+{: .output}
 
 Talk about job dependencies for making one job run after another.
 Write an example where the first job makes a file, and the second job changes the file.
