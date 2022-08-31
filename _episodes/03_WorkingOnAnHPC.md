@@ -351,7 +351,7 @@ When we schedule a job with `sbatch` we can use the `-d` or `--dependency` flag 
 > > ~~~
 > > [phancock@farnarkle1 phancock]$ sbatch ../KLuken_HPC_workshop/first_script.sh
 > > Submitted batch job 29442667
-> > [phancock@farnarkle1 phancock]$ sbatch -d after:29442667 ../KLuken_HPC_workshop/second_script.sh
+> > [phancock@farnarkle1 phancock]$ sbatch -d afterok:29442667 ../KLuken_HPC_workshop/second_script.sh
 > > Submitted batch job 29442668
 > > [phancock@farnarkle1 phancock]$ squeue -u ${USER}
 > >              JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
@@ -366,6 +366,228 @@ In the above example you'll see that the first job submitted was not running due
 This means that the job in in the queue but that it is waiting for other jobs to complete before it can be run.
 The second job, however, is not running due to `(Dependency)`, and this is because it's waiting for the first job to complete.
 
+Again in the above example, we used the dependency criteria of `afterok`, but many more options are available:
+
+- `after`: This job starts after the other job has begun or been canceled.
+- `afterany`: This jobs starts after the other job has finished, regulardless of status.
+- `afterok`: This job statrts after the other job has finished successfully.
+- `afternotok`: This job starts after the other job has finished un-successfully (returned error, or was killed by the scheduler).
+
+It is possible to list multiple dependencies by appending multiple job ids.
+For example `afterok:123:124:125:153`
+
+In the case of `afterok` if the named job fails, then this job will not be run - it will be deleted from the schedule.
+Simlarly with the `afternotok` - if the named job successed then this job will not be run.
+
+By using the `afterok` and `afternotok` dependencies it is possible to set up a fork in your workflow, such that when a job fails, a cleanup job will run, but when the job succeeds the next part of your workflow will run.
+
+TODO: Add an exersise for people to plan a branching job schedule with dependencies.
+
+### Parallel workflows
+We will be discussing parallel computing in [lesson 04]({{page.root}}{% link _episodes/04_ParallelComputing.md %}) in more depth.
+As a prelude to that lesson lets consider a workflow which has a structure more like the following:
+
+![DiamondWorkflow]({{page.root}}{% link fig/DiamondWorkflow.png %})
+
+In this workflow we have a single job which fetches all the data that we need to process, and then multiple processing jobs which are independent of each other, followed by a cleanup job.
+The dependency indicated by the arrows shows that the different processing jobs need to happen after the data retrieval and before the cleanup, but have no reliance on each other.
+In this case we can set up the dependencies as follows:
+
+1.  queue start job
+2.  queue processing job1, depends on start job
+3.  queue processing job2, depends on start job
+4.  queue processing job3, depends on start job
+5.  ...
+6.  queue processing jobN, depends on start job
+7.  queue cleanup job, depends on all of the processing jobs
+
+In the above case it is highly likely that the processing jobs (1..N) will be copies of each other, with only a small change in the way that the processing is done.
+For example: the start job can download a lot of data, and the individual processing jobs are processing the same data, but testing different models each time.
+In this case the parameters of the models are all that is changing in the job files.
+We could either set up a template system to make a copy of the template job, and then alter the parameters within, and submit them according to the above scheme, or we could get SLURM to do this work for us.
+
+This brings us to the concept of **array jobs**.
+In an array job we write a single script that is submitted to SLURM, but we tell it that we want multiple copies of this job to run.
+Within the job we then identify the ID or job number, and use that to set up the parameters for the job.
+Let's explore this idea with a simple example.
+
+We have a process that does some simulation based on initial parameters and we want to run this on various different inputs and collect the results in a summary file.
+Our workflow is:
+1. set up the parameters for each of the simulations
+2. run the simulation on each set of parameters
+3. colate all the results together in one file
+
+The simulation that we want to run is computing the area and perimeter of a regular polygon (an N-gon) which is inscribed within the unit circle.
+Our simulation is contained within the following python script:
+
+> ## area_of_ngon.py 
+> ~~~
+> #! /usr/bin/env python
+> 
+> import argparse
+> import math
+> import sys
+> 
+> 
+> def area_perimeter_ngon(n=3):
+>   """
+>   Compute the area and perimeter of a regular N-gon
+>   inscribed within a cirlce of radius 1.
+>   """
+>   # Complain if n<3 because those shapes don't exist
+>   if n<3:
+>     raise AssertionError(f"Cannot compute area for ngon when n={n}")
+>   r = 1 # Radius of our circle
+>   perimeter = 2*n*r * math.sin(math.pi/n)
+>   area = 0.5 * n * r**2 * math.sin(2*math.pi/n)
+>   return area, perimeter
+> 
+> 
+> if __name__ == "__main__":
+>   parser = argparse.ArgumentParser()
+>   parser.add_argument('n', default=None, type=int, help='Number of angles in our n-gon')
+>   parser.add_argument('--out', dest='out', default='output.txt', type=str, help='output file')
+>   options = parser.parse_args()
+>   area, perimeter = area_perimeter_ngon(options.n)
+>  
+>   with open(options.out,'w') as f:
+>     f.write(f'A {options.n}-gon inscribed within a unit circle has an area of {area:5.3f} and a perimeter of {perimeter:5.3f}\n')
+> ~~~
+> {: .language-python}
+{: .callout}
+
+Our script has been built in such a way that we can control it's behaviour using command line arguments:
+`area_of_ngon.py --out 3-gon.txt 3`
+
+Our setup script is:
+> ## start.sh
+> ~~~
+> #! /usr/bin/env bash
+> #
+> #SBATCH --job-name=start
+> #SBATCH --output=/fred/oz983/%u/start_%A_out.txt
+> #SBATCH --error=/fred/oz983/%u/start_%A_err.txt
+> #
+> #SBATCH --ntasks=1
+> #SBATCH --time=00:05
+> #SBATCH --mem-per-cpu=1G
+> 
+> # move to the directory where the script/data are
+> cd /fred/oz983/${USER}
+> 
+> #make a file
+> touch input_data.txt
+> 
+> echo "doing some pre-processing work"
+> 
+> # put some data in
+> for i in 3 4 5 6 7 8;
+> do
+>   echo ${i} >> input_data.txt
+> done
+> ~~~
+> {: .language-bash}
+{: .callout}
+
+As you can see this start up script creates a file called `intput_data.txt` which contains the numbers 3..8.
+Also note that we have use `%u` in the path for the output and error logs.
+When we submit the job SLURM will replace `%u` with the username of the person submitting the job.
+Similarly, we have use `%A` as part of the file name, and SLURM will replace this with the jobid.
+The end result is that our error and ouput logs will look like:
+`/fred/oz983/phancock/start_123456_out.txt`
+and if we run our script multiple times, the log files wont get over written.
+
+We then create a script that will read one of the lines from this file, and use it to run our python script.
+This script is part of an array job.
+We use `--array=start-end` to indicate that this is an array job and what job indicies we would like to use.
+
+> ## branch.sh
+> ~~~
+> #! /usr/bin/env bash
+> #
+> #SBATCH --job-name=ngon
+> #SBATCH --output=/fred/oz983/%u/ngon_%A-%a_out.txt
+> #SBATCH --error=/fred/oz983/%u/ngon_%A-%a_err.txt
+> #
+> #SBATCH --ntasks=1
+> #SBATCH --time=00:05
+> #SBATCH --mem-per-cpu=1G
+> #SBATCH --array=1-6
+> 
+> # load modules
+> module load python/3.8.5
+> 
+> # move to the directory where the script/data are
+> cd /fred/oz983/${USER}
+> 
+> data_file='input_data.txt'
+> 
+> # read the i-th line of the data file (where i is the array number)
+> # and stor it as "n"
+> n=$(sed -n${SLURM_ARRAY_TASK_ID}p ${data_file})
+> 
+> echo "I'm array job number ${SLURM_ARRAY_TASK_ID}"
+> echo "My n-gon number is ${n}"
+> 
+> python3 ../KLuken_HPC_workshop/area_of_ngon.py --out ${n}-gon.txt ${n}
+> ~~~
+> {: .language-bash}
+{: .callout}
+
+The script `branch.sh` is doing a few new things we should note:
+- we use `%a` to use the array task id in the filename of the output (eg `ngon_123456-1_out.txt`). 
+- we set `--array=1-6` to indicate that we want six jobs to run with task ids of 1,2,3,4,5 and 6.
+- we read the environment variable `${SLURM_ARRA_TASK_ID}` to determine the task id
+- we use sed to print the line from the data file corresponding to our task id and save it as `n`
+- run our simulation script with parameter `${n}`
+
+Finally our collect and clean up script looks like:
+
+> ## collect.sh
+> ~~~
+> #! /usr/bin/env bash
+> #
+> #SBATCH --job-name=collect
+> #SBATCH --output=/fred/oz983/%u/collect_%A_out.txt
+> #SBATCH --error=/fred/oz983/%u/collect_%A_err.txt
+> #
+> #SBATCH --ntasks=1
+> #SBATCH --time=00:05
+> #SBATCH --mem-per-cpu=200
+> 
+> 
+> # move to the directory where the script/data are
+> cd /fred/oz983/${USER}
+> 
+> # list all the files that we will 'process'
+> files=$(ls *gon.txt)
+> 
+> # this is where the 'proccessed' data will end up
+> outfile=collected.txt
+> 
+> echo "collecting outputs from : ${files}"
+> echo "results will be in: ${outfile}"
+> 
+> # delete the outfile before we write to it
+> if [[ -e ${outfile} ]]; then rm ${outfile};fi
+> 
+> # do the 'processing' and write to the outfile
+> for f in ${files}; do
+>   cat ${f} >> ${outfile}
+>   # delete the intermediate files to save space
+>   rm ${f}
+> done
+> 
+> 
+> echo "Phew! Hard work complete..."
+> ~~~
+> {: .language-bash}
+{: .callout}
+
+There isn't much new in the collect script, except to note that we also delete the intermediate data files.
+
+With all of the above in place we can then make our workflow run using the following three commands.
+
 ~~~
 [phancock@farnarkle1 phancock]$ sbatch --begin=now+120 ../KLuken_HPC_workshop/start.sh
 Submitted batch job 29442061
@@ -373,18 +595,29 @@ Submitted batch job 29442061
 Submitted batch job 29442065
 [phancock@farnarkle1 phancock]$ sbatch -d afterok:29442065 ../KLuken_HPC_workshop/collect.sh
 Submitted batch job 29442066
+~~~
+{: .output}
+
+The `--begin=now+120` tells SLURM that we don't want the first job to start for another 2 minutes.
+This is just gives us time to set up the dependencies before the job runs.
+
+Note: when we set up the dependency for the collect script we just need to refer to the array job id and not all the individual tasks.
+Slurm will automatically wait until all parts of a job have completed before resolving dependencies.
+
+We can watch the jobs move through different stages of the queue as follows.
+~~~
 [phancock@farnarkle1 phancock]$ watch squeue -u ${USER}
              JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
           29442061   skylake    start phancock PD       0:00      1 (BeginTime)
           29442066   skylake  collect phancock PD       0:00      1 (Dependency)
     29442065_[1-6]   skylake     ngon phancock PD       0:00      1 (Dependency)
-
+# Start job is waiting to begin, others are waiting for dependency to be resolve
 
              JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
           29442061   skylake    start phancock CG       0:04      1 john31
           29442066   skylake  collect phancock PD       0:00      1 (Dependency)
     29442065_[1-6]   skylake     ngon phancock PD       0:00      1 (Dependency)
-
+# start job is running, others are waiting
 
              JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
         29442065_6   skylake     ngon phancock PD       0:00      1 (Priority)
@@ -394,31 +627,17 @@ Submitted batch job 29442066
         29442065_2   skylake     ngon phancock PD       0:00      1 (Priority)
           29442066   skylake  collect phancock PD       0:00      1 (Dependency)
         29442065_1   skylake     ngon phancock PD       0:00      1 (Priority)
+# start job has completed, the ngon jobs are waiting in the queue ready to start
+# the collect job is still waiting on dependencies to be resolved
 
              JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
           29442066   skylake  collect phancock PD       0:00      1 (Priority)
+# all the ngon jobs are finished and now the collect job has begun
 
              JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
+# all jobs now complete
 ~~~
 {: .output}
-
-Talk about job dependencies for making one job run after another.
-Write an example where the first job makes a file, and the second job changes the file.
-Submit jobs and look at them in `squeue`.
-
-Talk about array jobs, maybe do an example as well.
-Note the `%A` and `%a` notation for job logs in the slurm directives.
-Show how to use the job array number to control what each of the jobs do -> use the array ID as the row number in a file which then gives the input params for our program to run.
-
-Talk about job templates and how to use SED to fill in the template info.
-
-- SLURM
-- Slurm scripts
-- Sbatch, salloc, sinfo
-- Job dependencies
-- Array jobs
-- Flavours of nodes and different partitions/queues (revisit)
-- How to create a workflow using templates (brief because Nextflow will replace this)
 
 ## How do I install software on an HPC
 - Environments (make)
