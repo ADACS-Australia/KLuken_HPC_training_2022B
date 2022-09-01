@@ -10,6 +10,54 @@ keypoints:
 - "This is not a lecture"
 ---
 
+## Intro
+For many people parallel computing brings to mind optimization.
+Whilst optimization can often lead you down the path of parallel computing, the two are not the same.
+
+Work with a workflow mindset.
+Identify your **goals** first, then your **inputs**, then your **tools**.
+A workflow maps inputs to goals using tools.
+
+Optimize your total workflow:
+
+Amdahl's Law: 
+- System speed-up limited by the slowest component.
+
+Paul’s rule of thumb: 
+- You are the slowest component.
+
+Therefore: 
+1. Focus on reducing **your** active interaction time,
+2. *then* on your total wait time, 
+2. *then* on cpu time.
+
+Avoid premature optimisation:
+![ObligatoryXKCD](https://imgs.xkcd.com/comics/is_it_worth_the_time.png)
+
+Verify that you **have** a problem before you spend resources **fixing** a problem.
+
+> ## Donanld Knuth (in the context of software development)
+> 
+> Premature optimization is the root of all evil
+> 
+{: .testimonial}
+
+Good coding practices can lead to more performant code from the outset.
+This is **not** wasted time.
+
+You can't optimize to zero.
+Working fast is good, but avoiding work is better.
+Repeated computing is wasted computing.
+[Check-pointing](https://hpc-unibe-ch.github.io/slurm/checkpointing.html) and [memoization](https://en.wikipedia.org/wiki/Memoization) are good for this.
+
+Embrace sticky tape solutions:
+- Build on existing solutions
+- Use your code to move between solutions (eg BASH / Python)
+- Only write new code where none exists
+- Choose a language/framework that suits the problem
+- Optimize only when there is a problem
+
+
 ## Types of parallelism	
 One of the biggest advantages of using an HPC is that you will have access to a large number of processing cores.
 These cores are often not that much faster than what you have on a desktop machine (they may even have a lower clock speed).
@@ -61,7 +109,23 @@ intro `xargs` and demonstrate it's use on a local machine or interactive session
 show also that `srun` can be used to manage jobs slightly more easily than xargs (though only on a SLURM system), by using `srun --exclusive`
 
  
-### Domain based parallelism
+### Domain or Data based parallelism
+Consider an task that reads a data array, transforms it, and then writes it out again.
+The simplest implementation of such a task can be represented as follows, where `f(x)` represents the transform:
+![SISD]({{page.root}}{% link fig/SISD.png %})
+In this example we have one compute unit doing all the work.
+
+If multiple compute units are available then we can parallelize our work by having each compute unit perform the same set of instructions, but working on different parts of the data.
+We can then have these processes running in parallel as follows, and do the same work in 1/3 the time.
+![SISDx3]({{page.root}}{% link fig/SISDx3.png %})
+
+The above approach is often referred to as either domain or data based parallelism, because we are dividing our data into domains, and then working on each domain in parallel.
+Here we assume that the work that needs to be done to compute `f(x_i)` is independent of any previous results, or rather, that the order in which the results are computed is unimportant.
+
+If our particular computing task falls into the above category, then we can replace our single processing design with a multiprocessing design in which all the processes that are doing the work have access to the same input/output memory locations.
+This shared memory multiprocessing paradigm typically uses a library called OpenMP.
+
+![MISD]({{page.root}}{% link fig/MISD.png %})
 
 MPI and OpenMP
 
