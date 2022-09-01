@@ -639,20 +639,123 @@ We can watch the jobs move through different stages of the queue as follows.
 ~~~
 {: .output}
 
+We now have an understanding of how to run job on and HPC with SLURM, how to create a workflow, and monitor the status of our jobs.
+The we will now focus on doing jobs that are a more than just printing things, and for this we'll need some of our own software.
+
 ## How do I install software on an HPC
-- Environments (make)
-- Already built modules (load)
+As noted in a [previous lesson]({{page.root}}{% link _episodes/02_WhatIsHPC.md %}#software), the HPC facility administrators manage a lot of software.
+For software that is provided by the HPC facility we can use the module system to load the required software/version.
+In the previous exercises you saw this happen when we called `module load python/3.8.5`.
+We will explore the module system in more detail and then learn how to build and install our own software.
+
+### The LMOD module system
+The [LMOD](https://lmod.readthedocs.io/en/latest/) software is designed to allow users of an HPC facility to manage which software they are using at a given time.
+When a user loads a module, the lmod system will set a bunch of different environment variables that are needed to run the particular software.
+Additionally, additional modules (dependencies) will be loaded (or unloaded) to minimise version conflicts.
+
+When we first log into ozstar we have a farily limited set of modules already loaded:
+~~~
+[phancock@farnarkle1 ~]$ module list
+
+Currently Loaded Modules:
+  1) nvidia/.latest (H,S)   2) slurm/.latest (H,S)
+~~~
+{: .output}
+
+If we want to have access to a python interpreter we can try the following:
+~~~
+[phancock@farnarkle1 ~]$ module load python
+Lmod has detected the following error:  Couldn't find module with name python, did you mean to load one of the following?
+        * python/.3.6.4-numpy-1.14.1
+        * python/3.6.4
+        * python/.2.7.14-numpy-1.14.1
+        * python/3.8.5
+        * python/3.7.4
+        * python/3.6.9
+        * python/2.7.14
+        * python/3.10.4 
+~~~
+{: .output}
+
+As can be seen from the error message, there are multiple versions of python installed on this system, and none of them are set as the default version.
+We need to specify the version that we want to load using `module load python/3.8.5`
+Once we've done this we can see that python is now loaded along with a set of dependent libraries:
+~~~
+[phancock@farnarkle1 ~]$ module list
+
+Currently Loaded Modules:
+  1) nvidia/.latest (H,S)   3) gcccore/9.2.0     5) gcc/9.2.0     7) openmpi/4.0.2     9) sqlite/3.21.0  11) openssl/1.1.1g
+  2) slurm/.latest  (H,S)   4) binutils/2.33.1   6) hwloc/2.0.3   8) imkl/2019.5.281  10) zlib/1.2.11    12) python/3.8.5
+~~~
+{: .output}
+
+In loading python we've actually loaded **10** modules.
+Thankfully we didn't have to track these dependencies down and load them ourselves!
+
+If we want to see a list of all the modules that are available we can run `module avail`, but it is a very long and exhaustive list that is hard to browse.
+Instead, if we want to search for a library or module we can use `module spider <name>`.
+
+> ## Find some modules
+> Use `module spider` to figure out what versions of the scipy python module are available.
+> > ## answer
+> > ~~~
+> > [phancock@farnarkle1 ~]$ module spider scipy
+> > 
+> > ------------------------------------------------------------------------------------------------------------------------
+> >   scipy:
+> > ------------------------------------------------------------------------------------------------------------------------
+> >     Description:
+> >       SciPy is a collection of mathematical algorithms and convenience functions built on the Numpy extension for
+> >       Python.
+> > 
+> >      Versions:
+> >         scipy/1.0.0-python-2.7.14
+> >         scipy/1.0.0-python-3.6.4
+> >         scipy/1.0.1-python-3.6.4
+> >         scipy/1.3.0-python-3.6.4
+> >         scipy/1.4.1-python-3.7.4
+> >         scipy/1.4.1-python-3.8.5
+> >         scipy/1.6.0-python-3.7.4
+> >         scipy/1.6.0-python-3.8.5
+> >         scipy/1.8.0-python-3.10.4
+> >      Other possible modules matches:
+> >         scipy-bundle
+> > 
+> > ------------------------------------------------------------------------------------------------------------------------
+> >   To find other possible module matches execute:
+> > 
+> >       $ module -r spider '.*scipy.*'
+> > 
+> > ------------------------------------------------------------------------------------------------------------------------
+> >   For detailed information about a specific "scipy" module (including how to load the modules) use the module's full name.
+> >   For example:
+> > 
+> >      $ module spider scipy/1.8.0-python-3.10.4
+> > ------------------------------------------------------------------------------------------------------------------------
+> > ~~~
+> > {: .output}
+> {: .solution}
+{: .challenge}
+
+The `module spider` command will also match partial strings so if you use `module spider zip` it will show you all the modules with zip in the name.
+Once you locate the module you want to use you'll need to include `module load program/version` in all of your job scripts before that program can be used.
+If you end up in the not so nice situation where you need to run different versions of a program at different parts of your job you can use `module unload pogram/version` or `module swap old_program/version new_program/version` to change versions.
+This is occasionally needed when the software you rely on was not written/built/installed by you.
+
+Installing or building software on an HPC can be a littel trecherous at times because you need to be careful of:
+- where you are building code: the compute nodes might have a different architecture from the head nodes (or each other)
+- the modules loaded whilst building: if you load a library while building the code, you'll need to load that same program/version when running the code so that the library links work properly
+- required permissions: some software requires special permissions to build (or does unexpected things that may be not allowed by your admin)
+- where the software is installed to: most software will want to live in the `/bin` or `/usr/bin` directory of your local machine, but these are not write-able on an HPC. Even if you can install software in your home directory, this is often not the best choice on an HPC.
+
+Building various types of software is not within the scope of this course, however a solution that is becomming more common in HPC facilities is to allow users to build and run containers with their desired software within.
 
 ### Containers
-[Singularity/Apptainer](https://apptainer.org/)/Docker
+[Singularity/Apptainer](https://apptainer.org/)/[Docker](https://www.docker.com/)
+
 What containers are.
 
 How to use them.
 
 How to build them.
 
-## Benchmarking
-- Benchmarking and tracking resource usage
-- Python - scalene
-- Nextflow - report.html
-- generic / other?

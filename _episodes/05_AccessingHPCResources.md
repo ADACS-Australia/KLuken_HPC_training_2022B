@@ -24,3 +24,9 @@ What exists, what they offer, how to access:
 - science case
 - when to apply
 - director's time
+
+## Benchmarking
+- Benchmarking and tracking resource usage
+- Python - scalene
+- Nextflow - report.html
+- generic / other?
