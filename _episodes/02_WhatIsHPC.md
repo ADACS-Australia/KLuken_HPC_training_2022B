@@ -30,14 +30,17 @@ Even when you are using your computer to browse the web or write emails, most of
 Full screen, high intensity gaming can really give your computer a work out, pushing the compute, RAM, and maybe disk use to the maximum, but you personally cannot (and should not) sustain this activity 24/7.
 You might allow your computer to sleep or turn of when not in use to save some power.
 Suffice to say, that your computer has a lot of capacity to do work, but mostly it just renders web pages.
-An HPC, with it's goal of "always available, always working" cannot operate in this way.
-Any time that an HPC resource is not being used is time / energy / money that is being wasted, and all HPC facilities will work to reduce this waste by maximizing use.
+This idle nature does not align with HPC's goal of "always available, always working" so they are not operated this way.
+Any time an HPC resource is not being used is time / energy / money that is being wasted, and all HPC facilities will work to reduce this waste by maximizing use.
 
 A shared use system is implemented such that many people can use the HPC resources at the same time.
-Not only can multiple people log into the system, but they each must stake a claim of the work that they will do and the resources that are required.
-A scheduling system then figures out the best way to complete all the work, whilst having the smallest amount of wasted resources.
-There is often a balance that has to be made between how much resources are made available (how much hardware to buy and run) and the amount of work that people need to get done.
-If you have too much work to do, the users will have to wait a long time before they get results, and if not enough work is available, then there will be wasted time/money in the form of unused effort.
+Not only can multiple people log into the system, but they each must plan the work that they will do and the resources that are required.
+One does this by submitting a computing job to a scheduler which will run your job once resources are available.
+The scheduling system figures out the most efficient way to complete all the work by minimising the amount of resources (CPUs, RAM, GPUs, etc) that are unused.
+
+
+HPC centres try to strike a balance between how much resources are made available (how much hardware to buy and run) and the amount of work that people need to get done.
+If you have too much work to do, the users will have to wait a long time before they get results, and if not enough work is available, then there will be wasted time/money in the form of unused computing resources.
 
 ### What HPC resources are available to me?
 As an astronomy researcher in Australia there are a number of systems that you can have access to as noted in the table below.
@@ -67,7 +70,7 @@ These log-in nodes usually have similar hardware spec to a desktop machine (CPU/
 There are then **compute nodes** which are where all the work is to be done.
 These nodes typically have a large cpu or gpu count, a large amount of RAM, and possibly some super fast attached storage, in addition to being attached to the shared file systems.
 Depending on the HPC center there may be a range compute nodes available with different hardware setups and different intended uses.
-For example, some of the nodes can be optimized for network and I/O rather than computing, making them the ideal place to transfer data into or out of the computing facility. 
+For example, some of the nodes can be optimized for network and I/O rather than computing, making them the ideal place to transfer data into or out of the computing facility.
 These are often referred to as **data mover nodes**.
 Another common type of node configuration is one with a *very* large amount of RAM, which is optimized for data visualization, and will allow people direct login access to explore their data sets.
 These are typically referred to as **visualisation nodes**.
@@ -94,7 +97,7 @@ All of the above storage locations are usually access via a POSIX file system in
 This means that they will look like regular drives/directories and you can read/write/copy/move files as you would on your own machine.
 
 An **archive** location where users can store data for extended periods of time.
-An archive typically has a very slow I/O performance but a *very* large quota. 
+An archive typically has a very slow I/O performance but a *very* large quota.
 Copying files in/out of an archive will usually involve storing your data in some intermediate location, either for the archive manager to pick up and store, or for you to copy to a location where you will process the data.
 
 
