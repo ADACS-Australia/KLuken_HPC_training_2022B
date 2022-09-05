@@ -87,6 +87,13 @@ This could be achieved by having a job array of 32 jobs, and each job would orch
 This method will result in 32 nodes x 6 hours of resources, or ~32 better than the previous option.
 We refer to this type of organization as job packing.
 
+Here is a visualization of what we are doing:
+![JobPacking]({{ page.root }}{% link fig/JobPacking.png %})
+In the top left we have the worst case scenario where a single user uses a node to run a task that uses just one core of the node.
+In the top right is a more realistic view of what happens when node resources can be shared.
+Multiple users can run jobs on the same node, but it's not common that the requests people make are going to add up to 100% resource usage so there will be some wastage.
+In the bottom left is the goal that we are aiming for with job packing - complete use of all the CPU cores for the tasks we are running.
+
 Occasionally, the limiting resource on a compute node is not the number of CPU cores but the amount of RAM available.
 If we can either limit or estimate the peak RAM usage of our tasks then we can adjust our job packing such that we use as much of the RAM as possible per node.
 For example, we might have 192GB of RAM available per node, but have a task that uses up to 10GB of RAM, and so we'd only be able to pack 19 copies of this task onto each of our compute nodes.
@@ -97,12 +104,29 @@ This time is not that long (maybe 30 seconds), so if your job has a relatively s
 In such cases we can pack our jobs such that we have 10,000 jobs running within a single job, but only 32 running at one time.
 This is a second form of job packing.
 
-In all of the above implementations the parallelism is being handled by a combination of SLURM and our batch job scripts.
+In each of the above implementations the parallelism is being handled by a combination of SLURM and our batch job scripts.
 We don't need to have any knowledge of (or access to) the source code of the program that is actually doing the compute.
 
 In a [previous lesson]({{page.root}}{% link _episodes/03_WorkingOnAnHPC.md %}#parallel_workflows) we explored job arrays, so we won't revisit them here, however we will dive a little deeper into job packing.
 
+### Job packing with `xargs`
+
+The program `xargs` is standard on most Unix based systems and was created to "build and execute command lines from standard input".
+At its most basic level, `xargs` will accept input from STDIN and convert this into commands which are then executed in the shell.
+`xargs` is able to manage the execution of these sub processes that it spawns and thus can be used to run multiple programs in parallel.
+
+If we were to have a file which consisted of greetings, one per line, we could use xargs to echo each of these greetings.
+
+cat greetings  | xargs -P 4 -exec echo {}\;
+
 TODO: a bunch of info graphics for the above, plus an exercise for the learners.
+
+> ## Parallel example with xargs
+> Do a thing
+> > ## Solution
+> > Here is how it's done
+> {: .solution}
+{: .challenge}
 
 intro `xargs` and demonstrate it's use on a local machine or interactive session
 
@@ -111,7 +135,7 @@ show also that `srun` can be used to manage jobs slightly more easily than xargs
  
 ### Domain or Data based parallelism
 Consider an task that reads a data array, transforms it, and then writes it out again.
-The simplest implementation of such a task can be represented as follows, where `f(x)` represents the transform:
+The simplest implementation of such a task can be represented as follows, where `f(x)` represents the transform, and we iterate over all the data in order:
 ![SISD]({{page.root}}{% link fig/SISD.png %})
 In this example we have one compute unit doing all the work.
 
@@ -123,7 +147,13 @@ The above approach is often referred to as either domain or data based paralleli
 Here we assume that the work that needs to be done to compute `f(x_i)` is independent of any previous results, or rather, that the order in which the results are computed is unimportant.
 
 If our particular computing task falls into the above category, then we can replace our single processing design with a multiprocessing design in which all the processes that are doing the work have access to the same input/output memory locations.
-This shared memory multiprocessing paradigm typically uses a library called OpenMP.
+This form of parallelism requires that all the compute processes have access to the same memory which *usually* means that they all have to be on the same node of the HPC cluster that you are working on.
+
+
+
+Another form of parallelism occurs when we have the same input data, but we want to process this data in different ways to give different outputs.
+
+We could simply write completely different programs to perform the different calculations, but typically there is some preprocessing or setup work that needs to be done which is common between all the tasks.
 
 ![MISD]({{page.root}}{% link fig/MISD.png %})
 
@@ -135,6 +165,8 @@ MPI and OpenMP
 ## Memory models
 - Shared memory with OpenMP
 - Distributed memory with MPI
+
+This shared memory multiprocessing paradigm typically uses a library called OpenMP.
 
 ## Parallel processing
 - With bash
