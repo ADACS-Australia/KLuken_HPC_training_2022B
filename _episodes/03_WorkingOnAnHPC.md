@@ -759,3 +759,5 @@ How to use them.
 
 How to build them.
 
+## TODO
+Talk about requesting additional resources such as GPUs or attached storage.
