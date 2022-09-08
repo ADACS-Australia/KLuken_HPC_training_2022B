@@ -115,22 +115,73 @@ The program `xargs` is standard on most Unix based systems and was created to "b
 At its most basic level, `xargs` will accept input from STDIN and convert this into commands which are then executed in the shell.
 `xargs` is able to manage the execution of these sub processes that it spawns and thus can be used to run multiple programs in parallel.
 
-If we were to have a file which consisted of greetings, one per line, we could use xargs to echo each of these greetings.
+We will again simulate a hard task by doing something simple and then sleeping.
+In this case we have a script called `greet.sh` which is as follows:
 
-cat greetings  | xargs -P 4 -exec echo {}\;
+> ## `greet.sh`
+> ~~~
+> #! /usr/bin/env bash
+> 
+> echo "$@ to you my friend!"
+> sleep 1
+> ~~~
+> {: .language-bash}
+{: .callout}
 
-TODO: a bunch of info graphics for the above, plus an exercise for the learners.
+If we were to have a file which consisted of greetings (`greetings.txt`), one per line, we could use xargs to run our above script with the greeting as an argument:
 
-> ## Parallel example with xargs
-> Do a thing
-> > ## Solution
-> > Here is how it's done
-> {: .solution}
-{: .challenge}
+~~~
+xargs -a greetings.txt -L 1 -exec ./greet.sh
+~~~
+{: .language-bash}
 
-intro `xargs` and demonstrate it's use on a local machine or interactive session
+The `-L 1` instructs xargs to pass one line at a time as arguments to our `-exec` command, and `-a` indicates the input data file.
+The above would eventually output the following:
 
-show also that `srun` can be used to manage jobs slightly more easily than xargs (though only on a SLURM system), by using `srun --exclusive`
+~~~
+Hello to you my friend!
+Gday to you my friend!
+Kaya to you my friend!
+Kiaora to you my friend!
+Aloha to you my friend!
+Yassas to you my friend!
+Konnichiwa to you my friend!
+Bonjour to you my friend!
+Hola to you my friend!
+Ni Hao to you my friend!
+Ciao to you my friend!
+Guten Tag to you my friend!
+Ola to you my friend!
+Anyoung haseyo to you my friend!
+Asalaam alaikum to you my friend!
+Goddag to you my friend!
+Shikamoo to you my friend!
+Namaste to you my friend!
+Merhaba to you my friend!
+Shalom to you my friend!
+~~~
+{: .output}
+
+You'll see that the `sleep 1` command means that each greeting is followed by a pause, and that we only get one greeting at a time.
+The code is being executed on a single CPU core sequentially.
+
+![SerialHello]({{page.root}}{% link fig/SerialHello.png %})
+
+If we want to work with 8 tasks in parallel we can do so using the `-P 8` argument to xargs:
+
+~~~
+xargs -a greetings.txt -L 1 -P 8 -exec ./greet.sh
+~~~
+{: .language-bash}
+
+You'll see that we get the same output as before (maybe in a different order) but that it occurs in batches of 8, with an approximately 1 second pause between them.
+What is happening now is that the waiting time is happening in parallel rather than in serial.
+If we replaced the `sleep 1` command with some actual work that needs to be done then we'd be making use of multiple cores in no time!
+
+![ParallelHello]({{page.root}}{% link fig/ParallelHello.png %})
+
+By using `xargs` we can create a single job file that will spawn multiple tasks (up to some maximum) that will run concurrently.
+Moreover, if we have more tasks to complete than CPU cores available, `xargs` will wait for a task to complete before starting another.
 
  
 ### Domain or Data based parallelism
@@ -150,27 +201,136 @@ If our particular computing task falls into the above category, then we can repl
 This form of parallelism requires that all the compute processes have access to the same memory which *usually* means that they all have to be on the same node of the HPC cluster that you are working on.
 
 
-
 Another form of parallelism occurs when we have the same input data, but we want to process this data in different ways to give different outputs.
 
 We could simply write completely different programs to perform the different calculations, but typically there is some preprocessing or setup work that needs to be done which is common between all the tasks.
 
 ![MISD]({{page.root}}{% link fig/MISD.png %})
 
-MPI and OpenMP
 
 ### Vectorized operations
+Vectorization is the process of rewriting a loop so that instead of doing one operation per loop over N loops, your processor will do the same operation on multiple data simultaneously per loop.
 
+Modern CPUs provide support for this via what is called single instruction multiple data (SIMD) instructions.
+A CPU with a 512 register can hold 16x 32bit numbers at once (or 8x 64bits), and apply the same instruction to all of them within a single clock cycle.
+
+For example, if you wanted to add two vectors together, you could have a loop like this:
+
+~~~
+for (int i=0; i<16; i++)
+  C[i] = A[i] + B[i];
+~~~
+{: .language-c}
+
+Which would be executed on your CPU as like this if there is no vectorization happening:
+
+![EmptyRegister](https://www.quantifisolutions.com/wp-content/uploads/2021/07/2.jpg)
+
+You can see that only 1/4 of the register is being used.
+The rest is effectively wasted.
+However, if vectorization is enabled then the CPU will execute the same instruction on multiple data at once like this:
+
+![FullRegister](https://www.quantifisolutions.com/wp-content/uploads/2021/07/3.jpg)
+
+The above example is written in C rather than Python, because the C compiler is where this vectorization occurs.
+When compiled with the right flags, the C preprocessor will figure out which loops can be vectorized and rewrite them according to the data type and size / availability of the CPU register of the system that you are working on.
+
+In a language like Python there is no compiler, just an interpreter, so how do we make use of vectorization?
+The answer is that we take our Python code, write it in C or Fortran, and then make a python wrapper function that will package our data up and send it to that code for processing.
+This is all rather fiddly work that most people don't have time to do, so instead you should rely on libraries like `numpy` or `scipy` which are really python interfaces to fast, optimized, and often vectorized, C libraries.
+
+Note that vectorization isn't magic and it has some limits.
+The key thing to remember is that SIMD stands for **SAME** instruction multiple data.
+If your loop isn't doing an identical operation every time then you can't make use of vectorization.
+Things that break vectorization include: loop dependencies (accessing values after they have been changed in a previous iteration), flow control (if/break/continue statements within the loop), and calling functions within the loop.
+
+In Python, the good rule of thumb is that vectorization is as simple as using `numpy` data structures and replacing your loops with to calls to `numpy`.
+
+### Vectorization with numpy
+We'll continue the above example with a python loop that computes C=A+B, where A and B are lists or arrays of integers.
+In this example we'll show how we can complete the same operation using either Python `list` objects or `numpy.array` objects.
+
+> ## Add two python lists
+> Using `ipython` do the following and observe the output:
+> ~~~
+> A_list=list(range(10_000))
+> B_list=list(range(10_000))
+> 
+> %timeit C_list = [ a+b for a,b in zip(A_list,B_list)]
+> ~~~
+> {: .language-python}
+> > ## Output
+> > Depending on the speed of your computer you'll get something like this:
+> > ~~~
+> > 529 µs ± 21.8 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+> > ~~~
+> > {: .output}
+> {: .solution}
+{: .challenge}
+
+> ## Add two numpy arrays
+> Again using `ipython`, do the following and observe the output:
+> ~~~
+> # assuming the same session as before
+> import numpy as np
+> A = np.array(A_list)
+> B = np.array(B_list)
+> %timeit C = A+B
+> ~~~
+> {: .language-python}
+> > ## Output
+> > Depending on the speed of your computer you'll get something like this:
+> > ~~~
+> > 1.18 µs ± 44.1 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
+> > ~~~
+> > {: .output}
+> > ![MindBlown](https://www.reactiongifs.us/wp-content/uploads/2017/07/Mind-Blow-2.gif)
+> {: .solution}
+{: .challenge}
+
+`numpy` contains more than just basic math functions.
+In fact many of the linear algebra operations that you would want to perform on arrays, vectors, or matricies (in the `numpy.linalg` module), call on powerful system level libraries such as OpenBLAS, MKL, and ATLAS.
+These libraries, in turn, are multi-threaded or multi-core enabeled, so in many cases you'll also be able to make use of multiple cores, without having to explicitly deal with the multiprocessing library, just by using `numpy` or `scipy` functions.
+Some particularly useful examples are the `scipy.optimize` and `scipy.fft` modules.
+
+The main lesson here is that Python is slow but easy to code, and C is fast but hard(er) to code, but by using libraries such as `numpy` you can start to get the benefit of both worlds - easy to code, fast to use.
+So, wherever possible, use already built libraries and avoid re-implementing things yourself.
+Some potentially useful places to start are:
+
+-  [numpy](https://numpy.org/)
+-  [scipy](https://scipy.org/)
+-  [astropy](https://www.astropy.org/)
+-  [scikit-learn](https://scikit-learn.org/stable/)
+-  [scikit-image](https://scikit-image.org/)
+
+> ## Share you favorite libraries
+> Share your favorite libraries with your group.
+> Don't restrict yourself to Python!
+{: .challenge}
 
 ## Memory models
-- Shared memory with OpenMP
-- Distributed memory with MPI
+We have explored some ways of doing implicit multiprocessing by taking advantage of existing tools or libraries.
+We are now going to look at some of the explicit ways in which we can make use of multiple CPU cores at the same time.
+Any time we have a program that is working across multiple cores, we will in fact be working with a collection of processes (typically 1 per core), which are communicating with each other in order to complete the task at hand.
+Working with multiple cores or processes thus requires that we understand how to share information between processes, and thus we will discuss the two main paradigms - shared memory, and distributed memory.
 
-This shared memory multiprocessing paradigm typically uses a library called OpenMP.
+### Parallel processing with shared memory
+OpenMP
+[![SharedMemory]({{page.root}}{% link fig/shared-memory.png %})](https://www.comsol.com/blogs/hybrid-parallel-computing-speeds-up-physics-simulations)
 
-## Parallel processing
-- With bash
-- With Python
-- Others (links to C/Fortran material)
+TODO: using srun
 
-Some content can be cribbed from [here](https://adacs.org.au/wp-content/uploads/2016/02/slurm.pdf)
+### Parallel processing with distributed memory
+MPI
+[![DistributedMemory]({{page.root}}{% link fig/distributed-memory.png %})](https://www.comsol.com/blogs/hybrid-parallel-computing-speeds-up-physics-simulations)
+
+TODO: using srun
+
+### Hybrid parallel processing
+A bit of both at once.
+Typical example, a program that uses multiple nodes and then all cores on each node.
+The program will use MPI to dispatch a bunch of primary processes, one per node, which in turn control multiple worker processes within each node.
+
+[![HybridMemory]({{page.root}}{% link fig/hybrid-memory.png %})](https://www.comsol.com/blogs/hybrid-parallel-computing-speeds-up-physics-simulations)
+
+TODO: using srun
