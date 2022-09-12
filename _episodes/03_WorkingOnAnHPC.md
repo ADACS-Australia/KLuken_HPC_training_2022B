@@ -768,10 +768,38 @@ Installing or building software on an HPC can be a littel trecherous at times be
 Building various types of software is not within the scope of this course, however a solution that is becomming more common in HPC facilities is to allow users to build and run containers with their desired software within.
 
 ### Containers
-[Singularity/Apptainer](https://apptainer.org/)/[Docker](https://www.docker.com/)
+Containers provide a way to package software in an isolated environment which may even have a different operating system from the host.
+The two most popular containerization systems are [Singularity/Apptainer](https://apptainer.org/) and [Docker](https://www.docker.com/).
+Docker is primarily used on computers where you have root access such as your laptop/desktop or a compute node in the cloud.
+HPC facilities will not use Docker as it provides root access to the host system, and instead will use Singularity which does not.
 
-What containers are.
+The two systems are largely interpoerable - you can build a Docker container on your desktop, test it out in your workflow, and then convert it to a Singularity image for use on your HPC facility of choice.
+You can think of a container as a self container operating system which you can build with all the software that you need, which you can then deploy on any computer that you like.
+In fact you don't even need to know how to build the containers to use them as there are many available pre-built containers that you can use.
+Both systems provide an online repository for storing built containers: Docker has [DockerHub](https://hub.docker.com/), while Singularity uses [Singularity Container Services (SCS)](https://cloud.sylabs.io/).
 
-How to use them.
+For singularity you can pull containers from DockerHub or SCS onto your local machine or HPC.
+For example the software package [AegeanTools](https://github.com/PaulHancock/Aegean), has been containerized and put on DockerHub at [hub.docker.com/r/paulhancock/aegean](https://hub.docker.com/r/paulhancock/aegean).
+To pull the image and run it locally we would do the following:
 
-How to build them.
+~~~
+# on OzStar the singularity module is called apptainer
+module load apptainer/latest
+
+# pull and convert the container
+# this will create an image file called aegean_main.sif in the current directory
+singularity pull paulhancock/aegean:main
+
+# run the command `aegean` which is provided by the container
+singularity run aegean_main.sif aegean
+~~~
+{: .language-bash}
+
+The invocation syntax is `singularity run <run options> <image name> <command within image>`.
+If we want the program inside the container to interact with files that are outside the container we need to provide a *binding* between the two file systems.
+The syntax for this is `-B <path on host>:<path witin container>`.
+It is usually helpful to bind the current working directory to the same name within the container using `-B $PWD:$PWD`.
+
+If you would normally run `my_prog --args file` in the current directory then you can use a containerized version of `my_prog` and run it using: `singularity run -B $PWD:$PWD my_prog_image.sif my_prog -args $PWD/file`.
+
+Since Singularity images are single files, you can share them with others in your project group either by copying them or moving them to a shared directory that you use for common containers.
