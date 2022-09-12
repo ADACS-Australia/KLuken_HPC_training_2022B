@@ -611,13 +611,13 @@ We can watch the jobs move through different stages of the queue as follows.
           29442061   skylake    start phancock PD       0:00      1 (BeginTime)
           29442066   skylake  collect phancock PD       0:00      1 (Dependency)
     29442065_[1-6]   skylake     ngon phancock PD       0:00      1 (Dependency)
-# Start job is waiting to begin, others are waiting for dependency to be resolve
+# Start job is waiting to begin, others are waiting for dependency to be resolved
 
              JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
           29442061   skylake    start phancock CG       0:04      1 john31
           29442066   skylake  collect phancock PD       0:00      1 (Dependency)
     29442065_[1-6]   skylake     ngon phancock PD       0:00      1 (Dependency)
-# start job is running, others are waiting
+# start job is running, others are waiting on dependency
 
              JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
         29442065_6   skylake     ngon phancock PD       0:00      1 (Priority)
@@ -632,7 +632,7 @@ We can watch the jobs move through different stages of the queue as follows.
 
              JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
           29442066   skylake  collect phancock PD       0:00      1 (Priority)
-# all the ngon jobs are finished and now the collect job has begun
+# all the ngon jobs are finished and now the collect job is waiting to start
 
              JOBID PARTITION     NAME     USER ST       TIME  NODES NODELIST(REASON)
 # all jobs now complete
