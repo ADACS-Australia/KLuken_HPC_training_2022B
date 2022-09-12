@@ -13,49 +13,7 @@ keypoints:
 ## Intro
 For many people parallel computing brings to mind optimization.
 Whilst optimization can often lead you down the path of parallel computing, the two are not the same.
-
-Work with a workflow mindset.
-Identify your **goals** first, then your **inputs**, then your **tools**.
-A workflow maps inputs to goals using tools.
-
-Optimize your total workflow:
-
-Amdahl's Law: 
-- System speed-up limited by the slowest component.
-
-Paul’s rule of thumb: 
-- You are the slowest component.
-
-Therefore: 
-1. Focus on reducing **your** active interaction time,
-2. *then* on your total wait time, 
-2. *then* on cpu time.
-
-Avoid premature optimisation:
-![ObligatoryXKCD](https://imgs.xkcd.com/comics/is_it_worth_the_time.png)
-
-Verify that you **have** a problem before you spend resources **fixing** a problem.
-
-> ## Donanld Knuth (in the context of software development)
-> 
-> Premature optimization is the root of all evil
-> 
-{: .testimonial}
-
-Good coding practices can lead to more performant code from the outset.
-This is **not** wasted time.
-
-You can't optimize to zero.
-Working fast is good, but avoiding work is better.
-Repeated computing is wasted computing.
-[Check-pointing](https://hpc-unibe-ch.github.io/slurm/checkpointing.html) and [memoization](https://en.wikipedia.org/wiki/Memoization) are good for this.
-
-Embrace sticky tape solutions:
-- Build on existing solutions
-- Use your code to move between solutions (eg BASH / Python)
-- Only write new code where none exists
-- Choose a language/framework that suits the problem
-- Optimize only when there is a problem
+Parallel computing is about making use of resources while optimization is about making *better* use of the resources.
 
 
 ## Types of parallelism	
@@ -183,31 +141,6 @@ If we replaced the `sleep 1` command with some actual work that needs to be done
 By using `xargs` we can create a single job file that will spawn multiple tasks (up to some maximum) that will run concurrently.
 Moreover, if we have more tasks to complete than CPU cores available, `xargs` will wait for a task to complete before starting another.
 
- 
-### Domain or Data based parallelism
-Consider an task that reads a data array, transforms it, and then writes it out again.
-The simplest implementation of such a task can be represented as follows, where `f(x)` represents the transform, and we iterate over all the data in order:
-![SISD]({{page.root}}{% link fig/SISD.png %})
-In this example we have one compute unit doing all the work.
-
-If multiple compute units are available then we can parallelize our work by having each compute unit perform the same set of instructions, but working on different parts of the data.
-We can then have these processes running in parallel as follows, and do the same work in 1/3 the time.
-![SISDx3]({{page.root}}{% link fig/SISDx3.png %})
-
-The above approach is often referred to as either domain or data based parallelism, because we are dividing our data into domains, and then working on each domain in parallel.
-Here we assume that the work that needs to be done to compute `f(x_i)` is independent of any previous results, or rather, that the order in which the results are computed is unimportant.
-
-If our particular computing task falls into the above category, then we can replace our single processing design with a multiprocessing design in which all the processes that are doing the work have access to the same input/output memory locations.
-This form of parallelism requires that all the compute processes have access to the same memory which *usually* means that they all have to be on the same node of the HPC cluster that you are working on.
-
-
-Another form of parallelism occurs when we have the same input data, but we want to process this data in different ways to give different outputs.
-
-We could simply write completely different programs to perform the different calculations, but typically there is some preprocessing or setup work that needs to be done which is common between all the tasks.
-
-![MISD]({{page.root}}{% link fig/MISD.png %})
-
-
 ### Vectorized operations
 Vectorization is the process of rewriting a loop so that instead of doing one operation per loop over N loops, your processor will do the same operation on multiple data simultaneously per loop.
 
@@ -308,6 +241,33 @@ Some potentially useful places to start are:
 > Don't restrict yourself to Python!
 {: .challenge}
 
+
+### Domain or Data based parallelism
+Consider an task that reads a data array, transforms it, and then writes it out again.
+The simplest implementation of such a task can be represented as follows, where `f(x)` represents the transform, and we iterate over all the data in order:
+![SISD]({{page.root}}{% link fig/SISD.png %})
+In this example we have one compute unit doing all the work.
+
+If multiple compute units are available then we can parallelize our work by having each compute unit perform the same set of instructions, but working on different parts of the data.
+We can then have these processes running in parallel as follows, and do the same work in 1/3 the time.
+![SISDx3]({{page.root}}{% link fig/SISDx3.png %})
+
+The above approach is often referred to as either domain or data based parallelism, because we are dividing our data into domains, and then working on each domain in parallel.
+Here we assume that the work that needs to be done to compute `f(x_i)` is independent of any previous results, or rather, that the order in which the results are computed is unimportant.
+
+If our particular computing task falls into the above category, then we can replace our single processing design with a multiprocessing design in which all the processes that are doing the work have access to the same input/output memory locations.
+This form of parallelism requires that all the compute processes have access to the same memory which *usually* means that they all have to be on the same node of the HPC cluster that you are working on.
+
+
+Another form of parallelism occurs when we have the same input data, but we want to process this data in different ways to give different outputs.
+
+We could simply write completely different programs to perform the different calculations, but typically there is some preprocessing or setup work that needs to be done which is common between all the tasks.
+
+![MISD]({{page.root}}{% link fig/MISD.png %})
+
+In order to be able to implement the parallelism discussed here we need to understand how to share information between different processes.
+This is discussed in the next section.
+
 ## Memory models
 We have explored some ways of doing implicit multiprocessing by taking advantage of existing tools or libraries.
 We are now going to look at some of the explicit ways in which we can make use of multiple CPU cores at the same time.
@@ -315,22 +275,131 @@ Any time we have a program that is working across multiple cores, we will in fac
 Working with multiple cores or processes thus requires that we understand how to share information between processes, and thus we will discuss the two main paradigms - shared memory, and distributed memory.
 
 ### Parallel processing with shared memory
-OpenMP
+In this paradigm we create a parent program which spawns multiple child processes, each of which have access to some common shared memory.
+This shared memory can be used for both reading or writing.
+In the second figure of the previous section, we could have a parent process spawning three children for a total of three active processes, using the following plan:
+1. The parent process would create a shared memory location and read the input data into it, and then create an empty shared memory location for writing the output data.
+2. The parent process would then spawn three children and pass them a reference to the shared memory locations, as well as information about which parts of the processing they will be responsible for (e.g. start/end memory address).
+3. All three of the processes would then perform the same operation `f(x)` on different parts of the input array, and write to different parts of the output array.
+4. When the parent process has completed it's work it will wait for the children to complete theirs, and then write the output data to a file.
+
+Each of the parent and child processes would run on a separate CPU core, and have their own memory allocation in addition to the shared memory.
+
 [![SharedMemory]({{page.root}}{% link fig/shared-memory.png %})](https://www.comsol.com/blogs/hybrid-parallel-computing-speeds-up-physics-simulations)
 
-TODO: using srun
+The beauty of the above example is that the individual processes do not need to communicate or synchronize with each other in order to complete their work.
+Most importantly, they are never trying to read or write from the same memory address as each other.
+The only constraint is that all of the processes need to be able to directly reach the memory (RAM) in question, and this typically means that they all have to be running on the same node of an HPC.
+The scaling of your task is thus limited by the number of cores (and memory) available on a single node of the HPC facility.
+
+Suppose that the function to be performed was to compute a running average of the input data over some window.
+In this case each of the processes would need to read data from overlapping regions of the input array (at the start/end of their allocation).
+Since the input data is not changing, having multiple concurrent reads is not an issue so each process can continue to act in isolation.
+
+Suppose that the function we are performing is to build a histogram of the input data.
+The output data are then a set of bins initiated to zero, and the "function" is to read the bin, increment the value by one, and then write the result back to the output.
+Each of the processes can still read the input data without interfering with each other but now need to ensure that updating the output array doesn't cause conflicts.
+For example, if two processes try to increment the same bin at the same time, then the'll both read the same value (e.g. 0), increment it (to 1), and then write the result.
+One of these processes will write first and the other will write second, but the second one will overwrite the first.
+What we need in this case is a way to indicate that the read/increment/write part of the code can only be done by one process at a time.
+In this case we can use what is called a lock on the memory location.
+A process would lock a memory address, do the required read/increment/write, and then unlock the memory address.
+The library which provides the shared memory will track of all the locks, and if a process asks to use some memory space which is locked the process will be forced to wait until the lock is released before doing so.
+To avoid creating/releasing locks thousands of times, it would instead be useful to have each of the processes create their own version of the output data to work on locally, and then do the update once per bin when they are finished.
+
+The [OpenMP](https://www.openmp.org/) library is the most widely used for providing shared memory access to C and Fortran programs.
+Other languages (such as python) which provide shared memory libraries are typically built on OpenMP and will therefore use similar terminology, and have similar limitations to OpenMP.
+
+Be aware that SLURM needs to know how many CPU cores to allocate to your job.
+If you ask for `--ntasks=1` then you'll typically get just a single core.
+Use `--ntasks=N` or `--cpu-per-task=N` to have access to more cores.
 
 ### Parallel processing with distributed memory
-MPI
+In this paradigm we create a number of processes all at once and pass to them some meta-data such as the total number of processes, and their process number.
+Typically the process numbered zero will be considered the parent process and the others as children.
+In this paradigm each process has it's own memory and there is no shared memory space.
+If we wanted to repeat the simple computing example used previously we would use the following plan:
+1. All processes use their process number to figure out which part of the input data they will be working on.
+2. Each process reads only the part of the input data that they require.
+3. Each process computes `f(x)` on the input data and stores the output locally.
+4. Each child process sends their output data to the parent process.
+5. The parent process creates a new memory allocation large enough to store all the output data, and copies it's own output into this memory.
+6. The parent process then receives the output data from each child process and copies it to the output data array.
+7. The parent process writes the output to a file.
+8. All processes are now complete and terminate.
+
+Each of the processes would run on a different CPU core and have their own memory space.
+This makes it possible for different processes to be run on different nodes of an HPC facility, with the message passing being done via the network.
+
 [![DistributedMemory]({{page.root}}{% link fig/distributed-memory.png %})](https://www.comsol.com/blogs/hybrid-parallel-computing-speeds-up-physics-simulations)
 
-TODO: using srun
+It is still possible to have each process running on the same node.
+A message passing interface ([MPI](https://en.wikipedia.org/wiki/Message_Passing_Interface)) has been developed and implemented in many open source libraries.
+As the name suggests the focus is not on sharing memory, but in passing information between processes.
+These processes can be on the same node or different nodes of an HPC.
+
+In order for SLURM to initiate an MPI job it is essential for the user to indicate how many nodes and how many cores of each node will be used for the program.
+This is done via the `--nodes` and `--ntasks` options.
+Within a job script a user then starts the MPI part of their work using the `srun` command.
+
+~~~
+srun my_prog <args for my_prog>
+~~~
+{: .language-bash}
 
 ### Hybrid parallel processing
-A bit of both at once.
-Typical example, a program that uses multiple nodes and then all cores on each node.
-The program will use MPI to dispatch a bunch of primary processes, one per node, which in turn control multiple worker processes within each node.
+It is possible to access the combined CPU and RAM of multiple nodes all at once by making use of a hybrid processing scheme.
+In such a scheme a program will use MPI to dispatch a bunch of primary processes, one per node, which in turn control multiple worker processes within each node which share memory using OpenMP.
 
 [![HybridMemory]({{page.root}}{% link fig/hybrid-memory.png %})](https://www.comsol.com/blogs/hybrid-parallel-computing-speeds-up-physics-simulations)
 
-TODO: using srun
+
+## Summary
+There are many levels of parallelism that can be leveraged for faster throughput.
+The type of parallelism used will depend on the details of the job at hand or the amount of time that you are able and willing to invest.
+Starting with the easy parts first (eg job arrays and job packing with `xargs`) and then moving to shared memory or MPI jobs until you reach a desired level of performance is recommended.
+
+
+
+<!-- Work with a workflow mindset.
+Identify your **goals** first, then your **inputs**, then your **tools**.
+A workflow maps inputs to goals using tools.
+
+Optimize your total workflow:
+
+Amdahl's Law: 
+- System speed-up limited by the slowest component.
+
+Paul’s rule of thumb: 
+- You are the slowest component.
+
+Therefore: 
+1. Focus on reducing **your** active interaction time,
+2. *then* on your total wait time, 
+2. *then* on cpu time.
+
+Avoid premature optimisation:
+![ObligatoryXKCD](https://imgs.xkcd.com/comics/is_it_worth_the_time.png)
+
+Verify that you **have** a problem before you spend resources **fixing** a problem.
+
+> ## Donanld Knuth (in the context of software development)
+> 
+> Premature optimization is the root of all evil
+> 
+{: .testimonial}
+
+Good coding practices can lead to more performant code from the outset.
+This is **not** wasted time.
+
+You can't optimize to zero.
+Working fast is good, but avoiding work is better.
+Repeated computing is wasted computing.
+[Check-pointing](https://hpc-unibe-ch.github.io/slurm/checkpointing.html) and [memoization](https://en.wikipedia.org/wiki/Memoization) are good for this.
+
+Embrace sticky tape solutions:
+- Build on existing solutions
+- Use your code to move between solutions (eg BASH / Python)
+- Only write new code where none exists
+- Choose a language/framework that suits the problem
+- Optimize only when there is a problem -->
