@@ -199,3 +199,5 @@ Once a job runs successfully you can then use `sacct` to figure out the time, CP
 Note that the `sacct` system only polls the jobs at some interval (30seconds?) and therefore it is possible that the MaxVMSize will not capture short duration peaks in RAM usage.
 This polling interval also means that your jobs that run overtime will not always be cancelled exactly at the wall time requested (see the example above).
 
+For longer running jobs you can monitor their resource usage in near-real time thanks to [this nifty website](https://supercomputing.swin.edu.au/monitor/).
+Take a minute to explore the site and see what kinds of efficiency people are getting in their jobs.
