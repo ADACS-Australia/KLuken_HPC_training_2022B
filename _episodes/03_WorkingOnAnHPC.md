@@ -3,11 +3,18 @@ title: "Working on an HPC"
 teaching: 15
 exercises: 15
 questions:
-- "What will we be learning?"
+- "How do I access an HPC facility?"
+- "How do I run tasks on an HPC?"
+- "How do I request resources for my jobs?"
+- "How do I access already installed software?"
+- "How can I install other software?"
 objectives:
-- "Review schedule"
+- "Understand how to login and submit jobs"
+- "Know how to create a workflow with job dependencies and array jobs"
+- "Know how to access/install/use software"
 keypoints:
-- "This is not a lecture"
+- "Plan your work and map it onto a workflow for SLURM to execute"
+- "Find software with LMOD or Singularity / Docker hub"
 ---
 
 ## Logging in 
@@ -15,15 +22,17 @@ We will be working with the Swinburne HPC cluster called OzStar, you should have
 See the [setup]({{page.root}}{% link _episodes/01_setup.md %}#an-account-on-ozstar) page if you need more information.
 
 To connect to a login node you should use ssh:
-```bash
+~~~
 ssh <user>@ozstar.swin.edu.au
-```
+~~~
+{: .langueage-bash}
+
 You will be asked for a password each time you connect.
 If you would prefer to work with ssh keys for password-less login, [this tutorial](https://linuxize.com/post/how-to-setup-passwordless-ssh-login/) is quite helpful.
 
 Upon login you'll be greeted with a message of the day:
 
-```output
+~~~
 -----------------------------------------------------------------------------
 Website: http://supercomputing.swin.edu.au
 ------------------------------------------------------------------------------
@@ -42,7 +51,9 @@ are limited to 4 cores per user. Login nodes may be rebooted at any
 time without notice for updates or for security reasons.
 To use the other >4000 cores in OzStar you need to go via the batch system.
 ------------------------------------------------------------------------------
-```
+~~~
+{: output}
+
 and you'll either be working on the `farnarkle1` or `farnarkle2` log-in node.
 It doesn't matter which node you join.
 
@@ -469,7 +480,7 @@ Our setup script is:
 > #SBATCH --error=/fred/oz983/%u/start_%A_err.txt
 > #
 > #SBATCH --ntasks=1
-> #SBATCH --time=00:05
+> #SBATCH --time=00:05:00
 > #SBATCH --mem-per-cpu=1G
 > 
 > # move to the directory where the script/data are
@@ -510,7 +521,7 @@ We use `--array=start-end` to indicate that this is an array job and what job in
 > #SBATCH --error=/fred/oz983/%u/ngon_%A-%a_err.txt
 > #
 > #SBATCH --ntasks=1
-> #SBATCH --time=00:05
+> #SBATCH --time=00:05:00
 > #SBATCH --mem-per-cpu=1G
 > #SBATCH --array=1-6
 > 

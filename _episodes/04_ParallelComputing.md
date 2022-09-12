@@ -3,11 +3,17 @@ title: "Parallel Computing"
 teaching: 15
 exercises: 15
 questions:
-- "What will we be learning?"
+- "What is parallel computing?"
+- "How can I do parallel computing?"
 objectives:
-- "Review schedule"
+- "Understand the different types of parallelism"
+- "Experience the joy of parallelism with xargs"
+- "Understand different memory models for parallel processing"
 keypoints:
-- "This is not a lecture"
+- "Parallelism is not about optimization per se"
+- "Understanding your workflow is key to planning your parallel processing"
+- "Start with what is easy, make things harder only when necessary"
+- "If using python leverage numpy data structures and functions"
 ---
 
 ## Intro

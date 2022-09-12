@@ -3,11 +3,14 @@ title: "What is HPC"
 teaching: 15
 exercises: 15
 questions:
-- "What will we be learning?"
+- "Isn't an HPC just a really big desktop computer?"
+- "What facilities can I access and how?"
 objectives:
-- "Review schedule"
+- "Compare and contrast HPC and personal computer hardware, software,  and use"
+- "Understand what facilities are available in Australia"
 keypoints:
-- "This is not a lecture"
+- "HPC is more than just [lots of desktops joined together](https://en.wikipedia.org/wiki/Beowulf_cluster)"
+- "Multiple users share the system and run jobs via a queue scheduler"
 ---
 
 ## What is High Performance Computing?

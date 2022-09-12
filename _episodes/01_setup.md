@@ -6,12 +6,9 @@ questions:
 - "How can I prepare?"
 - "How will we be learning?"
 objectives:
-- "Review schedule"
 - "Set expectations for engagement and behavior"
-- "Introduce ourselves"
 keypoints:
-- "This is not a lecture"
-- "The more you engage the more you will benefit"
+- "Ask questions, experiment, and help others"
 - "Everyone is here to learn and that means making mistakes"
 ---
 ## Acknowledgement of country
@@ -19,11 +16,18 @@ We wish to acknowledge the custodians of the land we reside on, for the develope
 We would like to pay our respect to their Elders past, present and emerging and we acknowledge and respect their continuing culture and the contribution they make to the life of this city and this region. 
 
 ## Overview
+This training was developed by [ADACS](https://adacs.org.au) at the request of Kieran Luken as part of their 2022B training project.
+This course is aimed at researchers who are new to using HPC facilities and is intended to be an overview of HPC concepts, how to run jobs, how to efficiently make use of the available resources, and to find out what HPC facilities they can access.
+
+This workshop has been developed in the style of Software Carpentries (hence the site layout) but is not an official Carpentries lesson.
+Some of the content is intended for learners to read, think, and ask questions, some of it will require learners to write code or use the HPC facility for themselves, and other parts will be treated as a discussion session where no or little HPC interaction will be needed.
 
 ## Required software / services
 You will need:
-- Access to Teams video conferencing system
+- Access to Teams/Webex video conferencing system (depending on which works on the day!)
 - A bash terminal
+- Access to OzSTAR (see below)
+- A zest for life
 
 See instructions on the [home page]({{page.root}}#Setup)
 

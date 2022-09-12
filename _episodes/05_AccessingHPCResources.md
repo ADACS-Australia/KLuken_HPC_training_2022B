@@ -3,11 +3,16 @@ title: "Accessing HPC resources"
 teaching: 15
 exercises: 15
 questions:
-- "What will we be learning?"
+- "What were those HPC resources again?"
+- "How/when do I apply for time?"
+- "How do I collect the information needed for my application?"
 objectives:
-- "Review schedule"
+- "Review the HPC facilities in Australia"
+- "Understand how/when to apply for time (and who is eligible)"
+- "Know how to benchmark a workflow with SLURM"
 keypoints:
-- "This is not a lecture"
+- "HPC time is like telescope time - you need science + resource justification"
+- "The best way of estimating resources is to run your workflow on test data"
 ---
 
 ## What HPC resources are available to me?
