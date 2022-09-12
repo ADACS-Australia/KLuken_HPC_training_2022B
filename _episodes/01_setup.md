@@ -18,9 +18,11 @@ keypoints:
 We wish to acknowledge the custodians of the land we reside on, for the developers of these lessons, these are the Wadjuk (Perth region) people of the Nyoongar nation.
 We would like to pay our respect to their Elders past, present and emerging and we acknowledge and respect their continuing culture and the contribution they make to the life of this city and this region. 
 
+## Overview
+
 ## Required software / services
 You will need:
-- Access to webex video conferencing system
+- Access to Teams video conferencing system
 - A bash terminal
 
 See instructions on the [home page]({{page.root}}#Setup)
