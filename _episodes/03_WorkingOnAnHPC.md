@@ -642,6 +642,23 @@ We can watch the jobs move through different stages of the queue as follows.
 We now have an understanding of how to run job on and HPC with SLURM, how to create a workflow, and monitor the status of our jobs.
 The we will now focus on doing jobs that are a more than just printing things, and for this we'll need some of our own software.
 
+## Requesting additional resources
+So far we have been specifying (wall) time, tasks/cpus, and RAM required for our jobs, but additional resources are available.
+The two additional resources that we can request on OzStar are GPUs and local storage attached to the node.
+On any SLURM system you can run `sbatch --gres=help` to see a list of the resources that can be requested.
+
+### GPU resources
+Accessing GPU resources can be done using the "generic resource request" which is `#SBATCH --gres=<name>[[:type]:count]`.
+For most systems (including OzStar) the gpu resource is just labeled `gpu`.
+Some systems have more than one type of GPU available and so you can specify which GPU you want to access using `--gres=gpu:type:1`.
+The sstar partition has 2 x NVIDIA P100 12GB PCIe GPUs per node, which you'll you can access without having to specify a type.
+Once you have specified the number of GPUs for a job the GPU resources will become visible to any programs which you run from within.
+
+### Attached storage
+Attached storage is typically very fast storage that is physically attached to the compute node making I/O on this device much faster than requesting I/O over the network to another file system.
+To request attached storage you can use `#SBATCH --tmp=20GB`.
+The location of the storage directory will then be saved in the environment variable `$JOBFS`.
+
 ## How do I install software on an HPC
 As noted in a [previous lesson]({{page.root}}{% link _episodes/02_WhatIsHPC.md %}#software), the HPC facility administrators manage a lot of software.
 For software that is provided by the HPC facility we can use the module system to load the required software/version.
@@ -758,6 +775,3 @@ What containers are.
 How to use them.
 
 How to build them.
-
-## TODO
-Talk about requesting additional resources such as GPUs or attached storage.
