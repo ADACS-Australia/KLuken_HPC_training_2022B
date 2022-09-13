@@ -395,7 +395,7 @@ By using the `afterok` and `afternotok` dependencies it is possible to set up a 
 > ## Plan a job
 > Use the dependencies listed above to create the following workflow in SLURM:
 > 1. Hold a meeting of criminals to plan a heist (3 criminals)
-> 2. After the meeting all criminals go home and plan ways to back stab their colleagues
+> 2. After the meeting and before the heist, all criminals go home and plan ways to back stab their colleagues 
 > 3. Heist is enacted
 > 4. If the heist is successful book flights to the cayman islands and retire
 > 5. If the heist fails enact back-stabbing plans
