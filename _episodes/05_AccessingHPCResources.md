@@ -170,18 +170,18 @@ The SLURM controller sent [signal](https://www.computerhope.com/unix/signals.htm
 
 For our current needs the relevant fields are as follows:
 
-| Field     | Description                              |
-| --------- | ---------------------------------------- |
-| TimeLimit | How much time was *allocated* to the job |
-| Elapsed   | How much time was *used* by the job      |
-| NCPUS     | *allocated* number of CPUS               |
-| UserCPU   | Time spent on user time                  |
-| SystemCPU | Time spent on system time                |
-| TotalCPU  | Total time spent (User + System)         |
-| CPUTime   | NCPUS * Elapsed                          |
-| ReqMem    | Requested memory                         |
-| MaxRSS    | Maximum RSS (used memory)                |
-| MaxVMSize | Maximum VMSize (addressable memory )     |
+| Field     | Description                                                  |
+| --------- | ------------------------------------------------------------ |
+| TimeLimit | How much time was *allocated* to the job                     |
+| Elapsed   | How much time was *used* by the job                          |
+| NCPUS     | *allocated* number of CPUS                                   |
+| UserCPU   | Time spent on user time (the program you ran)                |
+| SystemCPU | Time spent on system time (libraries called by your program) |
+| TotalCPU  | Total time spent (User + System)                             |
+| CPUTime   | NCPUS * Elapsed                                              |
+| ReqMem    | Requested memory                                             |
+| MaxRSS    | Maximum RSS (used memory)                                    |
+| MaxVMSize | Maximum VMSize (addressable memory )                         |
 
 We can use these fields to get the following information:
 ~~~
@@ -195,7 +195,7 @@ JobID         Timelimit    Elapsed      NCPUS    UserCPU  SystemCPU   TotalCPU  
 {: .output}
 
 For this particular job we requested 4 CPUs and used 3.649 seconds of user time, 2.291 seconds of system time, for a total of 5.941 seconds, and ran for 1minute 16seconds.
-The amount of time that could have been used if we had used all 4 CPU cores at 100% is 5:04, meaning that we used less than 1% of the allocated resources.
+The amount of time that could have been used if we had used all 4 CPU cores at 100% is 5:04 minutes, meaning that we used less than 1% of the allocated resources.
 We requested 4GB of RAM but had a peak VMSize of just 212MB, meaning that we could have requested less RAM.
 For my example task I would have been charged 1minute x 4 cores worth of resources, but have made use of less than 1% of those resources.
 
