@@ -18,7 +18,7 @@ keypoints:
 ---
 
 ## Logging in 
-We will be working with the Swinburne HPC cluster called OzStar, you should have an account, and be a member of the group `oz983`.
+We will be working with the Swinburne HPC cluster called OzSTAR, you should have an account, and be a member of the group `oz983`.
 See the [setup]({{page.root}}{% link _episodes/01_setup.md %}#an-account-on-ozstar) page if you need more information.
 
 To connect to a login node you should use ssh:
@@ -49,7 +49,7 @@ The OzStar cluster login nodes farnarkle1 and 2 are available to use as
 interactive nodes for debugging and running small jobs. Login sessions
 are limited to 4 cores per user. Login nodes may be rebooted at any
 time without notice for updates or for security reasons.
-To use the other >4000 cores in OzStar you need to go via the batch system.
+To use the other >4000 cores in OzSTAR you need to go via the batch system.
 ------------------------------------------------------------------------------
 ~~~
 {: output}
@@ -682,12 +682,12 @@ The we will now focus on doing jobs that are a more than just printing things, a
 
 ## Requesting additional resources
 So far we have been specifying (wall) time, tasks/cpus, and RAM required for our jobs, but additional resources are available.
-The two additional resources that we can request on OzStar are GPUs and local storage attached to the node.
+The two additional resources that we can request on OzSTAR are GPUs and local storage attached to the node.
 On any SLURM system you can run `sbatch --gres=help` to see a list of the resources that can be requested.
 
 ### GPU resources
 Accessing GPU resources can be done using the "generic resource request" which is `#SBATCH --gres=<name>[[:type]:count]`.
-For most systems (including OzStar) the gpu resource is just labeled `gpu`.
+For most systems (including OzSTAR) the gpu resource is just labeled `gpu`.
 Some systems have more than one type of GPU available and so you can specify which GPU you want to access using `--gres=gpu:type:1`.
 The sstar partition has 2 x NVIDIA P100 12GB PCIe GPUs per node, which you'll you can access without having to specify a type.
 Once you have specified the number of GPUs for a job the GPU resources will become visible to any programs which you run from within.
@@ -708,7 +708,7 @@ The [LMOD](https://lmod.readthedocs.io/en/latest/) software is designed to allow
 When a user loads a module, the lmod system will set a bunch of different environment variables that are needed to run the particular software.
 Additionally, additional modules (dependencies) will be loaded (or unloaded) to minimise version conflicts.
 
-When we first log into ozstar we have a farily limited set of modules already loaded:
+When we first log into OzSTAR we have a farily limited set of modules already loaded:
 ~~~
 [phancock@farnarkle1 ~]$ module list
 
@@ -821,7 +821,7 @@ For example the software package [AegeanTools](https://github.com/PaulHancock/Ae
 To pull the image and run it locally we would do the following:
 
 ~~~
-# on OzStar the singularity module is called apptainer
+# on OzSTAR the singularity module is called apptainer
 module load apptainer/latest
 
 # pull and convert the container

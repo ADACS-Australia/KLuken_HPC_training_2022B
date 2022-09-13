@@ -42,7 +42,7 @@ Depending on how the software is implemented there are two main ways to run task
 
 We can of course run hybrid models which combine the two above extremes.
 Suppose we have 1000 tasks that need to be done, and each task can be completed using a single CPU core in 6hours.
-Suppose we want to run this on [OzStar](https://supercomputing.swin.edu.au/ozstar/), such that we have 107 compute nodes, each with 36 CPU cores ([of which we can use 32](https://supercomputing.swin.edu.au/docs/2-ozstar/oz-slurm-create.html)).
+Suppose we want to run this on [OzSTAR](https://supercomputing.swin.edu.au/ozstar/), such that we have 107 compute nodes, each with 36 CPU cores ([of which we can use 32](https://supercomputing.swin.edu.au/docs/2-ozstar/oz-slurm-create.html)).
 We could use (1) above, but it would required 1,000 nodes x 6 hours of resources (6,000 node hours), and only use 1/36th of the available cores available on each node.
 This is not a good use of resources.
 We can't use (2) above because our nodes don't have 1000 cores in any single node.

@@ -22,7 +22,7 @@ As an astronomy researcher in Australia there are a number of systems that you c
 | --------------------------------------------- | --------------- | ------------------------- |
 | [Pawsey](https://pawsey.org.au/)              | HPC cluster     | NCMAS, Partner            |
 | [NCI](https://nci.org.au/)                    | HPC cluster     | NCMAS, ASTAC              |
-| [OzStar](https://supercomputing.swin.edu.au/) | HPC cluster     | ASTAC, open               |
+| [OzSTAR](https://supercomputing.swin.edu.au/) | HPC cluster     | ASTAC, open               |
 | Local cluster                                 | ?               | People at your institute  |
 | Azure / GCloud / AWS                          | Cloud computing | Anyone with a credit card |
 
@@ -44,7 +44,7 @@ Both centers provide training and information sessions related to the NCMAS sche
 To be eligible for NCMAS time the Chief Investigator must be employed at an Australian university or research institution.
 
 ### ASTAC
-Australia Astronomy Limited (AAL) runs an Astronomy Supercomputer Time Allocation Committee (ASTAC) which allocates available time on NCI and OzStar.
+Australia Astronomy Limited (AAL) runs an Astronomy Supercomputer Time Allocation Committee (ASTAC) which allocates available time on NCI and OzSTAR.
 The ASTAC is managed by ADACS.
 ASTAC runs twice annual calls for proposals with details available via [this page](https://astronomyaustralia.org.au/committees-astronomy-australia-ltd/astac.html).
 The two semesters run Jan-Jun and Jul-Dec.
@@ -53,7 +53,7 @@ The two semesters run Jan-Jun and Jul-Dec.
 ### Other
 In addition to NCMAS, Pawsey offer a [Partner Merit Allocation Scheme](https://support.pawsey.org.au/documentation/display/US/The+Pawsey+Partner+Merit+Allocation+Scheme), which is very similar to NCMAS in terms of application details and resourcing, however the Chief Investigator must be employed at a Pawsey Partner institution (CSIRO, Curtin University, Edith Cowan University, Murdoch University and the University of Western Australia).
 
-OzStar also has a non-merit allocation scheme (which we are currently using for this workshop), whereby Australian astronomers can have access to the facility and compete for un-used resources via the SLURM scheduler.
+OzSTAR also has a non-merit allocation scheme (which we are currently using for this workshop), whereby Australian astronomers can have access to the facility and compete for un-used resources via the SLURM scheduler.
 
 [Azure](https://azure.microsoft.com/en-au/) / [GCloud](https://cloud.google.com/) / [AWS](https://aws.amazon.com/) all offer cloud computing services which can provide expandable computing services on a user pays basis.
 Cloud computing is often not an affordable replacement for a dedicated HPC facility, however it can still be cheaper than buying and managing a system of your own, especially when you don't require the system to be run for more than a few weeks or months.

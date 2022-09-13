@@ -52,7 +52,7 @@ As an astronomy researcher in Australia there are a number of systems that you c
 | --------------------------------------------- | --------------- | ------------------------- | -------------------------------------- |
 | [Pawsey](https://pawsey.org.au/)              | HPC cluster     | WA based researchers      | Annual call for applications           |
 | [NCI](https://nci.org.au/)                    | HPC cluster     | Australian researchers    | Annual call for applications           |
-| [OzStar](https://supercomputing.swin.edu.au/) | HPC cluster     | Australian astronomers    | Rolling / tiered applications          |
+| [OzSTAR](https://supercomputing.swin.edu.au/) | HPC cluster     | Australian astronomers    | Rolling / tiered applications          |
 | Local cluster                                 | ?               | People at your institute  | Varied levels of resources and support |
 | Azure / GCloud / AWS                          | Cloud computing | Anyone with a credit card | On demand computing as a service       |
 
