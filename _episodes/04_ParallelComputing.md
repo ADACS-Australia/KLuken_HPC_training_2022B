@@ -268,6 +268,7 @@ This form of parallelism requires that all the compute processes have access to 
 Another form of parallelism occurs when we have the same input data, but we want to process this data in different ways to give different outputs.
 
 We could simply write completely different programs to perform the different calculations, but typically there is some preprocessing or setup work that needs to be done which is common between all the tasks.
+Here the separate tasks are represented by the fucntions `f(x)`, `g(x)`, and `h(x)`, and can be run simultaneously.
 
 ![MISD]({{page.root}}{% link fig/MISD.png %})
 
