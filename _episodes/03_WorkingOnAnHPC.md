@@ -392,7 +392,34 @@ Simlarly with the `afternotok` - if the named job successed then this job will n
 
 By using the `afterok` and `afternotok` dependencies it is possible to set up a fork in your workflow, such that when a job fails, a cleanup job will run, but when the job succeeds the next part of your workflow will run.
 
-TODO: Add an exersise for people to plan a branching job schedule with dependencies.
+> ## Plan a job
+> Use the dependencies listed above to create the following workflow in SLURM:
+> 1. Hold a meeting of criminals to plan a heist (3 criminals)
+> 2. After the meeting all criminals go home and plan ways to back stab their colleagues
+> 3. Heist is enacted
+> 4. If the heist is successful book flights to the cayman islands and retire
+> 5. If the heist fails enact back-stabbing plans
+> 
+> > ## Possible solution
+> > ~~~
+> > > sbatch meeting.sh
+> > Submitted batch job 100
+> > > sbatch -d afterany:100 plan1.sh 
+> > Submitted batch job 101
+> > > sbatch -d afterany:100 plan2.sh 
+> > Submitted batch job 102
+> > > sbatch -d afterany:100 plan3.sh
+> > Submitted batch job 103
+> > > sbatch -d afterany:101,102,103 heist.sh
+> > Submitted batch job 104
+> > > sbatch -d afterok:104 retire.sh
+> > Submitted batch job 105
+> > > sbatch -d afternotok:104 back-stab.sh
+> > Submitted batch job 106
+> > ~~~
+> > {: .language-bash}
+> {: .solution}
+{: .challenge}
 
 ### Parallel workflows
 We will be discussing parallel computing in [lesson 04]({{page.root}}{% link _episodes/04_ParallelComputing.md %}) in more depth.
