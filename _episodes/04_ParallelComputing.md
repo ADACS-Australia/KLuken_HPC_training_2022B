@@ -321,6 +321,76 @@ Be aware that SLURM needs to know how many CPU cores to allocate to your job.
 If you ask for `--ntasks=1` then you'll typically get just a single core.
 Use `--ntasks=N` or `--cpu-per-task=N` to have access to more cores.
 
+An example inspired by the OzSTAR help and [Wikipedia](https://en.wikipedia.org/wiki/OpenMP#C):
+
+> ## `hello.c`
+> ~~~
+> #include <stdio.h>
+> #include <omp.h>
+> 
+> int main(void)
+> {
+>     #pragma omp parallel
+>     printf("Hello from process: %d\n", omp_get_thread_num());
+>     return 0;
+> }
+> ~~~
+> {: .language-c}
+{: .solution}
+
+We compile the above to produce our executable called `hello`:
+~~~
+gcc -fopenmp hello.c -o hello -ldl
+~~~
+{: .language-bash}
+
+We then run this with the following script:
+
+> ## `openmp.sh`
+> ~~~
+> #! /usr/bin/env bash
+> #
+> #SBATCH --job-name=helloMP
+> #SBATCH --output=/fred/oz983/%u/OpenMP_Hello_%A_out.txt
+> #SBATCH --error=/fred/oz983/%u/OpenMP_Hello_%A_err.txt
+> #
+> #SBATCH --ntasks=1
+> #SBATCH --cpus-per-task=8
+> #SBATCH --time=00:01:00
+> 
+> # move to the directory where the script/data are
+> cd /fred/oz983/${USER}
+> 
+> export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+> /fred/oz983/KLuken_HPC_workshop/hello
+> ~~~
+> {: .language-bash}
+{: .solution}
+
+In the our code `hello.c` we do not specify how many processes there will be.
+Instead we do this in the job script `openmp.sh` by setting 1 task, and 8 `cpus-per-task`.
+This will cause SLURM to allocate 8 cores to our job.
+From here the `export` statement will then tell OpenMP that we want to run this many threads, and we'll end up with one thread (process) per core.
+
+> ## Run the openMP job
+> Run the job using `sbatch openmp.sh` and then when complete view the output file `OpenMP_Hello_?_out.txt`.
+> > ## Results
+> > ~~~
+> > Hello from process: 1
+> > Hello from process: 7
+> > Hello from process: 5
+> > Hello from process: 0
+> > Hello from process: 4
+> > Hello from process: 6
+> > Hello from process: 3
+> > Hello from process: 2
+> > ~~~
+> > {: .output}
+> > Notice how the output doesn't always occur in the order that we expect!
+> >
+> {: .solution}
+{: .challenge}
+
 ### Parallel processing with distributed memory
 In this paradigm we create a number of processes all at once and pass to them some meta-data such as the total number of processes, and their process number.
 Typically the process numbered zero will be considered the parent process and the others as children.
@@ -353,6 +423,45 @@ Within a job script a user then starts the MPI part of their work using the `sru
 srun my_prog <args for my_prog>
 ~~~
 {: .language-bash}
+
+Another example inspired by the OzSTAR help and [Wikipedia](https://en.wikipedia.org/wiki/Message_Passing_Interface#Example_program).
+We compile the program into an executable called `hello_mpi` and then call it from the job script:
+
+> ## `mpi.sh`
+> ~~~
+> #! /usr/bin/env bash
+> #
+> #SBATCH --job-name=helloMPI
+> #SBATCH --output=/fred/oz983/%u/MPI_Hello_%A_out.txt
+> #SBATCH --error=/fred/oz983/%u/MPI_Hello_%A_err.txt
+> #
+> #SBATCH --ntasks=8
+> #SBATCH --cpus-per-task=1
+> #SBATCH --time=00:01:00
+> 
+> # move to the directory where the script/data are
+> cd /fred/oz983/${USER}
+> 
+> srun /fred/oz983/KLuken_HPC_workshop/hello_mpi
+> ~~~
+> {: .language-bash}
+{: .callout}
+
+Note here that we set `ntasks` to be 8, and use just one cpu per task.
+We no longer need to export anything, but we do need to use the `srun` command.
+The following output will be seen:
+
+~~~
+We have 8 processes.
+Process 1 reporting for duty.
+Process 2 reporting for duty.
+Process 3 reporting for duty.
+Process 4 reporting for duty.
+Process 5 reporting for duty.
+Process 6 reporting for duty.
+Process 7 reporting for duty.
+~~~
+{: .output}
 
 ### Hybrid parallel processing
 It is possible to access the combined CPU and RAM of multiple nodes all at once by making use of a hybrid processing scheme.
