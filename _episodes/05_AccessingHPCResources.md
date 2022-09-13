@@ -44,7 +44,7 @@ Both centers provide training and information sessions related to the NCMAS sche
 To be eligible for NCMAS time the Chief Investigator must be employed at an Australian university or research institution.
 
 ### ASTAC
-Astralia Astronomy Limited (AAL) runs an Astronomy Supercomputer Time Allocation Committee (ASTAC) which allocates available time on NCI and OzStar.
+Australia Astronomy Limited (AAL) runs an Astronomy Supercomputer Time Allocation Committee (ASTAC) which allocates available time on NCI and OzStar.
 The ASTAC is managed by ADACS.
 ASTAC runs twice annual calls for proposals with details available via [this page](https://astronomyaustralia.org.au/committees-astronomy-australia-ltd/astac.html).
 The two semesters run Jan-Jun and Jul-Dec.
@@ -118,7 +118,7 @@ There area few things to unpack here so lets go in order of columns:
 - JobName - The name of the job/step
 - Partition - The cluster name or partition that the job ran on
 - Account - The account that will be charged for the resources used
-- AllocCPUS - The number of CPUS that were allocated to the job
+- AllocCPUS - The number of CPUs that were allocated to the job
 - State - The final state of the job
   - CANCELLED Job was cancelled by the user or a sysadmin
   - COMPLETED Job finished normally, with exit code 0
@@ -131,7 +131,7 @@ In the above example, I submitted a task that requested minute wall time.
 The job ran over time and was therefore cancelled by SLURM.
 The SLURM controller sent [signal](https://www.computerhope.com/unix/signals.htm) 15 (SIGTERM) to the script which caused it to exit with code 0.
 
-> ## What else can sacct do?
+> ## What else can `sacct` do?
 > Read the `man` pages for `sacct` and see what other reporting options are available.
 > For a short hand view try `sacct -e`.
 > > ## `sacct -e`

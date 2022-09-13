@@ -27,7 +27,7 @@ Given this large cost of ownership, the operators of an HPC will want to ensure 
 Many of the choices about how the system is organized are therefore best understood with the high level goal of "always available, always working".
 
 ### HPC vs desktop computers
-Asside from the hardware differences (discussed below), the main difference is that your computer is just for your use.
+Aside from the hardware differences (discussed below), the main difference is that your computer is just for your use.
 When you step away from your computer it will become idle waiting for you to return.
 Even when you are using your computer to browse the web or write emails, most of the hardware is not being used to it's full capacity.
 Full screen, high intensity gaming can really give your computer a work out, pushing the compute, RAM, and maybe disk use to the maximum, but you personally cannot (and should not) sustain this activity 24/7.
@@ -39,7 +39,7 @@ Any time an HPC resource is not being used is time / energy / money that is bein
 A shared use system is implemented such that many people can use the HPC resources at the same time.
 Not only can multiple people log into the system, but they each must plan the work that they will do and the resources that are required.
 One does this by submitting a computing job to a scheduler which will run your job once resources are available.
-The scheduling system figures out the most efficient way to complete all the work by minimising the amount of resources (CPUs, RAM, GPUs, etc) that are unused.
+The scheduling system figures out the most efficient way to complete all the work by minimizing the amount of resources (CPUs, RAM, GPUs, etc) that are unused.
 
 
 HPC centres try to strike a balance between how much resources are made available (how much hardware to buy and run) and the amount of work that people need to get done.
@@ -76,7 +76,7 @@ Depending on the HPC center there may be a range compute nodes available with di
 For example, some of the nodes can be optimized for network and I/O rather than computing, making them the ideal place to transfer data into or out of the computing facility.
 These are often referred to as **data mover nodes**.
 Another common type of node configuration is one with a *very* large amount of RAM, which is optimized for data visualization, and will allow people direct login access to explore their data sets.
-These are typically referred to as **visualisation nodes**.
+These are typically referred to as **visualization nodes**.
 
 
 ### Storage options
@@ -96,7 +96,7 @@ A **storage** directory that acts as a longer term storage location.
 This directory will have good I/O speeds, but not as good as the scratch area, and have a user or group quota smaller than on scratch.
 This space will usually be backed up and is where users should store the data that the need to keep for a long time.
 
-All of the above storage locations are usually access via a POSIX file system interface.
+All of the above storage locations are usually access via a [POSIX](https://en.wikipedia.org/wiki/POSIX) file system interface.
 This means that they will look like regular drives/directories and you can read/write/copy/move files as you would on your own machine.
 
 An **archive** location where users can store data for extended periods of time.

@@ -25,7 +25,7 @@ To connect to a login node you should use ssh:
 ~~~
 ssh <user>@ozstar.swin.edu.au
 ~~~
-{: .langueage-bash}
+{: .language-bash}
 
 You will be asked for a password each time you connect.
 If you would prefer to work with ssh keys for password-less login, [this tutorial](https://linuxize.com/post/how-to-setup-passwordless-ssh-login/) is quite helpful.
@@ -306,7 +306,7 @@ Initially our jobs is not running because it doesn't have high enough priority, 
 
 The script will take a few seconds to run the python script, and then sleep for 2 minutes so that we have a chance to catch it in the queue.
 
-We'll get the out put ina file called `res.txt`, which sits in the directory from which we submitted the sbtach job.
+We'll get the out put ina file called `res.txt`, which sits in the directory from which we submitted the `sbtach` job.
 
 ~~~
 [phancock@farnarkle2 phancock]$ more res.txt 

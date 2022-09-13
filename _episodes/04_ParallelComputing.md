@@ -228,8 +228,8 @@ In this example we'll show how we can complete the same operation using either P
 {: .challenge}
 
 `numpy` contains more than just basic math functions.
-In fact many of the linear algebra operations that you would want to perform on arrays, vectors, or matricies (in the `numpy.linalg` module), call on powerful system level libraries such as OpenBLAS, MKL, and ATLAS.
-These libraries, in turn, are multi-threaded or multi-core enabeled, so in many cases you'll also be able to make use of multiple cores, without having to explicitly deal with the multiprocessing library, just by using `numpy` or `scipy` functions.
+In fact many of the linear algebra operations that you would want to perform on arrays, vectors, or matrices (in the `numpy.linalg` module), call on powerful system level libraries such as OpenBLAS, MKL, and ATLAS.
+These libraries, in turn, are multi-threaded or multi-core enabled, so in many cases you'll also be able to make use of multiple cores, without having to explicitly deal with the multiprocessing library, just by using `numpy` or `scipy` functions.
 Some particularly useful examples are the `scipy.optimize` and `scipy.fft` modules.
 
 The main lesson here is that Python is slow but easy to code, and C is fast but hard(er) to code, but by using libraries such as `numpy` you can start to get the benefit of both worlds - easy to code, fast to use.
@@ -252,9 +252,9 @@ Some potentially useful places to start are:
 Consider an task that reads a data array, transforms it, and then writes it out again.
 The simplest implementation of such a task can be represented as follows, where `f(x)` represents the transform, and we iterate over all the data in order:
 ![SISD]({{page.root}}{% link fig/SISD.png %})
-In this example we have one compute unit doing all the work.
+In this example we have one compute unit (CPU0) doing all the work.
 
-If multiple compute units are available then we can parallelize our work by having each compute unit perform the same set of instructions, but working on different parts of the data.
+If multiple compute units are available (CPU0-2) then we can parallelize our work by having each compute unit perform the same set of instructions, but working on different parts of the data.
 We can then have these processes running in parallel as follows, and do the same work in 1/3 the time.
 ![SISDx3]({{page.root}}{% link fig/SISDx3.png %})
 
@@ -268,7 +268,7 @@ This form of parallelism requires that all the compute processes have access to 
 Another form of parallelism occurs when we have the same input data, but we want to process this data in different ways to give different outputs.
 
 We could simply write completely different programs to perform the different calculations, but typically there is some preprocessing or setup work that needs to be done which is common between all the tasks.
-Here the separate tasks are represented by the fucntions `f(x)`, `g(x)`, and `h(x)`, and can be run simultaneously.
+Here the separate tasks are represented by the functions `f(x)`, `g(x)`, and `h(x)`, and can be run simultaneously.
 
 ![MISD]({{page.root}}{% link fig/MISD.png %})
 
