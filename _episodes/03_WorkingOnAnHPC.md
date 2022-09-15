@@ -354,7 +354,7 @@ When we schedule a job with `sbatch` we can use the `-d` or `--dependency` flag 
 > ~~~
 > [user@host mydir]$ sbatch ../KLuken_HPC_workshop/first_script.sh
 > Submitted batch job 123456
-> [user@host mydir]$ sbatch -d after:123456 ../KLuken_HPC_workshop/second_script.sh
+> [user@host mydir]$ sbatch -d afterok:123456 ../KLuken_HPC_workshop/second_script.sh
 > [user@host mydir]$ squeue -u ${USER}
 > ~~~
 > {: .output}
