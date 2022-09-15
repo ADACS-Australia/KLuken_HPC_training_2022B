@@ -840,4 +840,28 @@ It is usually helpful to bind the current working directory to the same name wit
 
 If you would normally run `my_prog --args file` in the current directory then you can use a containerized version of `my_prog` and run it using: `singularity run -B $PWD:$PWD my_prog_image.sif my_prog -args $PWD/file`.
 
+On Pawsey we have multiple containers built for the different software pacakages that we run.
+They are stored in a common directory so that everyone in the various MWA user groups can access them (reduce duplication).
+I source the following script `containers.sh` in my job scritps so that I can call a container by putting, e.g.,  `${Crobbie}` at the start of the line.
+~~~
+# containers.sh
+# `source` this file to have short hand access to all your containers
+
+# Location of common container storage
+container_base="/pawsey/mwa/singularity"
+
+# default invocation string
+container_exec="singularity exec -B $PWD"
+
+# need to super-hack the path to make sure that the .h5 beam file is found within the right python path within the container
+Creduce="${container_exec} -B /pawsey/mwa:/usr/lib/python3/dist-packages/mwapy/data ${container_base}/mwa-reduce/mwa-reduce.img"
+# need to pass some environment variables
+Cmanta="${container_exec} --env MWA_ASVO_API_KEY=${MWA_ASVO_API_KEY} ${container_base}/manta-ray-client/manta-ray-client_latest.sif"
+# these work nice as is
+Ccotter="${container_exec} ${container_base}/cotter/cotter_latest.sif"
+Cmwalib="${container_exec} ${container_base}/pymwalib/pymwalib_latest.sif"
+Crobbie="${container_exec} ${container_base}/robbie/robbie-next.sif"
+~~~
+{: .language-bash}
+
 Since Singularity images are single files, you can share them with others in your project group either by copying them or moving them to a shared directory that you use for common containers.
