@@ -19,7 +19,7 @@ data_file='input_data.txt'
 
 # read the i-th line of the data file (where i is the array number)
 # and stor it as "n"
-n=$(sed -n${SLURM_ARRAY_TASK_ID}p ${data_file})
+n=$(sed -n ${SLURM_ARRAY_TASK_ID}p ${data_file})
 
 echo "I'm array job number ${SLURM_ARRAY_TASK_ID}"
 echo "My n-gon number is ${n}"
