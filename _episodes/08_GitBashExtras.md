@@ -101,6 +101,7 @@ Note that this last example will not include lines that start with code, and hav
 
 By default `grep` will just print the lines that match, and if you are searching multiple files, it will prepend the line with `<filename>:`.
 Here are some commonly used parameters that you can use to modify the behavior of `grep`:
+
 | option | effect                                                            |
 | ------ | ----------------------------------------------------------------- |
 | -i     | ignore case when making matches                                   |
