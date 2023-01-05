@@ -95,8 +95,7 @@ We could also search through a bunch of python scripts to find lines that make c
 
 With some regex help we can look for lines that have been commented out in our scripts by searching for a # at the start of the line: `grep '^#' *.py *.sh *.c`.
 If we want to exclude the "#SBATCH" and "#include" directives we can require that the line starts with a # followed by a space: `grep '^# ' *.py *.sh *.c`.
-Furthermore we can allow the line to start with some indentation of space/tab combo: `
-grep '^\s*# ' *.py *.sh *.c`.
+Furthermore we can allow the line to start with some indentation of space/tab combo: `grep '^\s*# ' *.py *.sh *.c`.
 Note that this last example will not include lines that start with code, and have a trailing comment.
 
 By default `grep` will just print the lines that match, and if you are searching multiple files, it will prepend the line with `<filename>:`.
@@ -115,7 +114,48 @@ Here are some commonly used parameters that you can use to modify the behavior o
 | -r     | recurse into directories                                          |
 
 
+`sed` is designed to let you edit a text file or stream, and requires that you provide a pattern for matching, and then a replacement for the text that is matched.
+`sed` is particularly useful for editing files in bulk.
+When developing this course I had some example job scripts that had lines that looked like the following:
+```
+#! /usr/bin/env bash
+#
+#SBATCH --job-name=start
+#SBATCH --output=/fred/oz983/phancock/start_%A_out.txt
+#SBATCH --error=/fred/oz983/phancock/start_%A_err.txt
+#
+#SBATCH --ntasks=1
+#SBATCH --time=00:05
+#SBATCH --mem-per-cpu=1G
+```
+{: .language-bash}
 
+These scripts worked for me, however they will not work as inteded for others because I have hardcoded the output/error directories to **my** work directory.
+What I want to do is replace instances of `/phancock/` with `/%u/` so that SLURM will replace the `%u` with the username of whoever is running the script.
+To achieve this I firstly need to find all instances of the pattern `/phancock/`, and for this I use grep:
+```
+grep '^#SBATCH.*/phancock/' *.sh
+```
+{: .language-bash}
+
+I have included the `^#SBATCH` so that I only match lines that are in the SLURM directives header section, and then use `.*` to match any set of characters between the `#SBATCH` section and the `/phancock/` section.
+If I were less pedantic and simply matched to `phancock` then I might end up matching lines elsewhere in the file.
+
+```
+branch.sh:#SBATCH --output=/fred/oz983/phancock/ngon_%A-%a_out.txt
+branch.sh:#SBATCH --error=/fred/oz983/phancock/ngon_%A-%a_err.txt
+collect.sh:#SBATCH --output=/fred/oz983/phancock/collect_%A_out.txt
+collect.sh:#SBATCH --error=/fred/oz983/phancock/collect_%A_err.txt
+mpi.sh:#SBATCH --output=/fred/oz983/phancock/MPI_Hello_%A_out.txt
+mpi.sh:#SBATCH --error=/fred/oz983/phancock/MPI_Hello_%A_err.txt
+openmp.sh:#SBATCH --output=/fred/oz983/phancock/OpenMP_Hello_%A_out.txt
+openmp.sh:#SBATCH --error=/fred/oz983/phancock/OpenMP_Hello_%A_err.txt
+start.sh:#SBATCH --output=/fred/oz983/phancock/start_%A_out.txt
+start.sh:#SBATCH --error=/fred/oz983/phancock/start_%A_err.txt
+```
+{: .output}
+
+We can see that there are 5 files, each with 2 instances of the mistake that I want to correct.
 
 ## wcstools
 command line tool for easy get/set of data/metadata in fits format
