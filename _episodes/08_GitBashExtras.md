@@ -157,8 +157,86 @@ start.sh:#SBATCH --error=/fred/oz983/phancock/start_%A_err.txt
 
 We can see that there are 5 files, each with 2 instances of the mistake that I want to correct.
 
-## wcstools
-command line tool for easy get/set of data/metadata in fits format
+To replace all instances of `/phancock/` with `/%u/` I can use `sed` with the following syntax:
+```
+sed -e 's[separator][match pattern][separator][replacement text][separator]g' <filename>
+```
+{: .language-bash}
+
+Usually people will use `/` or `:` as the separator, depending on what characters are being used in the match/replacement string. 
+Any character can be used.
+The `s` at the start of the string stands for *substitute* and the trailing `g` means *globally* (eg, all lines, possibly multiple times per line).
+We can use the match pattern from our `grep` command above, however we don't want to replace the entire line, just the `/phancock/` section.
+Thus we need to create some *capture groups* using `\( \)`.
+Our `sed` command would look like this:
+
+```
+sed -e 's:\(^#SBATCH.*\)/phancock/:\1/%u/:g' branch.sh
+```
+{: .language-bash}
+
+We have captured the first part of the line using `\(^#SBATCH.*\)` into group 1.
+We then substitute the matched part of the line with this group using `\1` and then append our desired `/%u/`.
+Effectively we have a long match pattern and are replacing only a subset of what was matched.
+Each new set of `\(\)` creates a new group with an increasing number between 1-9.
+We can nest these groups if desired, but we cannot have more than 9 automatically labeled groups.
+
+By default `sed` will direct the output to STDOUT (eg your screen).
+However we can use the `-i` flag to cause `sed` to do the replacement *inplace*, effectively editing the file.
+Alternatively we can pipe the output to a new file using `> newfile`, or append to an existing file with `>> existingfile`.
+
+Once I am confident that my replacements are going to wreck my files I run the following (in-place) substitution on all the `.sh` files in my directory:
+
+```
+sed -i -e 's:\(^#SBATCH.*\)/phancock/:\1/%u/:g' *.sh
+```
+{: .language-bash}
+
+I find [this page](https://sed.js.org/) quite useful for testing my sed expressions on example text.
+It has saved me from nerfing my files more than once.
+
+
+## WCSTools
+According to the [README](http://tdc-www.harvard.edu/software/wcstools/wcstools.readme.html)
+```
+WCSTools is a set of software utilities, written in C, which create,
+display and manipulate the world coordinate system of a FITS or IRAF
+image, using specific keywords in the image header which relate pixel
+position within the image to position on the sky.  Auxillary programs
+search star catalogs and manipulate images.
+```
+{: .output}
+
+WCSTools is not installed by default but you can download a copy from [http://tdc-www.harvard.edu/wcstools/](http://tdc-www.harvard.edu/wcstools/).
+On ubuntu you can also install via `sudo apt install wcstools`.
+
+Once again we have a powerful and many featured tool, of which a few functions are extremely useful, a few are available elsewhere, and some probably you'll never use.
+I note this package here because it provides this functionality via the command line, making it easy (er) to write bash scripts that do smart things with fits files.
+
+The functions which I find to be the most useful are:
+| command | description                                                         |
+| ------- | ------------------------------------------------------------------- |
+| getfits | Extract portion of a FITS file into a new FITS file, preserving WCS |
+| gethead | Return values for keyword(s) specified after filename               |
+| sethead | Set header keyword values in FITS or IRAF images                    |
+| getpix  | Return value(s) of specified pixel(s)                               |
+| setpix  | Set specified pixel(s) to specified value(s)                        |
+| gettab  | Extract values from tab table data base files                       |
+| imhead  | Print FITS or IRAF header                                           |
+| sky2xy  | Print image pixel coordinates for given sky coordinates             |
+| xy2sky  | Print sky coordinates for given image pixel coordinates             |
+| skycoor | Convert between J2000, B1950, galactic, and ecliptic coordinates    |
+
+So for example I can write a script that will look at the header of a fits file and figure out how large the image is using:
+```
+imfile=1904-66_SIN.fits
+xy=($(gethead ${imfile} NAXIS1 NAXIS2))
+x=${xy[0]}
+y=${xy[1]}
+echo "File ${imfile} is ${x} by ${y} pixels in size"
+```
+{: .language-bash}
+
 
 ## Bash as a programming language
 - sub-shells / arrays
