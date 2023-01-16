@@ -28,6 +28,31 @@ Consideration for workflow planning
   - development, time invested to run the workflow successfully the first time
   - maintenance, additional time required for further runs fo the workflow including adapting to changes in input/output requirements or underlying software/hardware
   - cost of opportunity, will you actually save any time by automating a workflow
+- logical requirements
+  - which part of the workflow depends on other parts being complete
+  - are there parts of the workflow that can be run in parallel
+  - at what point can the work be check-pointed via a file/variable
+
+### Example - ANNz
+
+Workflow is to run the `annz_class.py` script with 100 different seed values and then aggregate / summarize over the 100 different runs.
+Currently this is set up as a SLURM array job.
+
+To work as a NextFlow job we would:
+- write the seed values into a file, one per line
+- construct an initial channel by reading from this file
+- create a process that calls the `annz_class.py` script with a given seed value
+  - The output of this script could be a file with stats from the given run
+- create a aggregation process that will `.collect` the output from the previous script and provide a summary of the data into a single output file
+
+The classifier process would use the existing `annz_latest.sif` image, but the aggregator process could run with a generic python container.
+
+NextFlow advantages:
+- seed values are defined in one file only (rather than multiple `.py` files)
+- if jobs are interrupted or fail for some reason they can be automatically restarted
+- Re-running the workflow with an extra +20 seed values, will not re-run the already completed 100 versions
+- If the aggregation process is modified during development, the workflow up to this point is checkpointed and can be easily re-run without needed to wait ~36h.
+
 
 ## Advanced container considerations
 Two things to consider when building containers:
@@ -52,13 +77,25 @@ Example setup for a project:
 - a container for 3rd party C/C++ applications which have some complicated build requirements
 - a container for tensorflow which can use GPUs
 
+If you have multiple pieces of software that need to communicate with each other then running them in separate containers will add an orchestration overhead that you probably don't want.
+NextFlow can easily run a process within a given container, but specifying multiple containers for a single process isn't possible.
+To get around this you'll either need to create a single container that contains everything you need for a single process, or break the process into multiple parts.
 
 You can create a container and define an entrypoint so that you are able to call the container as if were just an application.
 This micro-service type model can work well, especially if the inputs/outputs are text based.
 
 ### How containers work together
-- micro services vs one container to rule them all
-- software within the container or on local system
-- composing containers
+Containers make it very easy yo create a set of independent but related services that communicate with each other via an api.
+This approach is called micro-services and is common for projects that are creating a web application.
 
+A web app would have containers such as:
+- A [database](https://www.postgresql.org/) to store data
+- An environment for running custom code (e.g. some machine learning models)
+- An [ORM](https://en.wikipedia.org/wiki/Object%E2%80%93relational_mapping) such as DJango that connects the database and the custom code and presents it to the user
+- A web service such as [nginx](https://nginx.org/en/) that passes user requests to DJango and serves pages to the user
+
+Getting the containers to talk to each other is then managed by specifying which containers are connected to which, and what ports they are using to communicate.
+[Docker-compose](https://docs.docker.com/get-started/08_using_compose/) is a common solution that allows you to specify these connections in a configuration file.
+In the above example all the containers would be running persistently waiting for user input.
+Such a configuration is often not required for scientific workflows.
 
