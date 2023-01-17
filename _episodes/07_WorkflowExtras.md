@@ -22,6 +22,7 @@ keypoints:
 Consideration for workflow planning
 - desired output 
 - required input
+- what artifacts will be useful for your development / debugging
 - is there an existing workflow that you can modify
 - time requirements
   - processing, time per run as well as number of expected runs
@@ -32,6 +33,32 @@ Consideration for workflow planning
   - which part of the workflow depends on other parts being complete
   - are there parts of the workflow that can be run in parallel
   - at what point can the work be check-pointed via a file/variable
+- NextFlow will only submit tasks to a work scheduler when they are ready to run, so long dependency chains cannot be leveraged
+  - A large number of small tasks will often not make the scheduler happy, so try for a smaller number of medium to large tasks
+  - The startup / teardown time for a job in SLURM can be ~10-30s, so multiple jobs which take less than a minute to complete will waste a lot of time
+
+Prototyping a workflow
+- Start designing your workflow using a pen/paper or a drawing app like [draw.io](https://app.diagrams.net/)
+- Begin at the highest most generic level
+- Copy and edit your workflow to include more specifics
+- Continue drilling down until you are at the point of "run this code with this file/value"
+- Pay attention to any decision points that occur in your workflow
+- Consider if different branches need to rejoin each other
+- Start with a minimum working example and then expand from there
+  - only add complexity when needed
+
+
+When to update a workflow
+- Break processes into smaller parts when:
+  - You want to increase the checkpointing frequency
+  - You want to increase the parallelism
+  - Your process is consuming too many resources (time, CPU, RAM) to run efficiently
+- Combine processes into one when:
+  - You find yourself passing too many values/files between processes
+  - The startup and tear down overhead for each process is a significant fraction of the resource usage
+  - You have multiple processes that do largely the same thing (reduce technical debt)
+    - Eg, make a single process which has two very similar modes of operation controlled by a flag or inferred from the input data
+- 
 
 ### Example - ANNz
 
@@ -59,7 +86,16 @@ Two things to consider when building containers:
 - ease of use
 - ease of development
 
+Having a single container that has all of your software and dependencies is convenient for deployment as you have a one-size-fits-all container.
+However, during development, you'll often need to change your software and possibly update dependencies.
+Having to rebuild your container every time you change your software can be a massive time sink.
+For software that is still under active development, it is often preferable to build a container that contains all the dependencies, but keep your own code on your local machine.
+When you invoke your code you can bind your working directory to some place within the container and then run your code from there.
+This will drastically reduce the try/test cycle of your development.
+When your code becomes stable you can then move it into the container.
+
 Related to the above are questions about how much software/data needs to live in each container.
+For the most part it is a good idea to store as little data inside a container as possible.
 
 Options include:
 - building multiple containers, one for each of the different pieces of software that you need
