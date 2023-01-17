@@ -11,13 +11,29 @@ keypoints:
 ---
 
 ## Git
-- branching and merging
+Discuss various [git workflows](https://www.atlassian.com/git/tutorials/comparing-workflows):
+- centralised
+- branching
+- gitflow
+- forking
+
+Note that:
+- forking = cloning
 - sync a project to two repositories
+  - `git remote add alt <url>`
+  - `git fetch alt`
+  - `git push alt/branch`
+
+
 ### CI/CD
-- writing tests
+- writing tests with pytest
 - running tests locally
 - running tests on github
-- auto documentation
+- auto documentation with sphinx
+  - docstrings -> api
+  - .md / .rst -> html
+- auto-doc on github
+  - readthedocs.io on merge into main
 
 
 ## Bash (and other unix shells)
