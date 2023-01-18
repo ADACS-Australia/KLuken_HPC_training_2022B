@@ -514,4 +514,8 @@ echo "File ${imfile} is ${x} by ${y} pixels in size"
 
 ## X11
 - how to open gui apps remotely
+  - `ssh -Y user@host`
+  - not a good idea for login nodes
+  - use a visualisation node (if available) or a worker node
+  - some HPC provide a web based remote desktop experience for this
 - link/discuss nomachine
