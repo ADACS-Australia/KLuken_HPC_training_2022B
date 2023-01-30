@@ -541,10 +541,25 @@ echo "File ${imfile} is ${x} by ${y} pixels in size"
   - what they do and how to use them
 - venv/conda environments
 
-## X11
-- how to open gui apps remotely
-  - `ssh -Y user@host`
-  - not a good idea for login nodes
-  - use a visualisation node (if available) or a worker node
-  - some HPC provide a web based remote desktop experience for this with lower latency
-- link/discuss nomachine
+## Accessing programs on a remote system
+The method of choice for connecting to a remote system is `ssh`.
+By default you'll have a user/pass access to a remote system, requiring to you remember and enter your password every time you access that system.
+You can set up a passwordless access using ssh keys which by default  are stored in your `~/.ssh/` directory.
+[This site](https://www.freecodecamp.org/news/the-ultimate-guide-to-ssh-setting-up-ssh-keys/) has a fairly straight forward description of how to set up and use ssh keys for easy remote access, including accessing GitHub.
+There will eventually be some programs that you cannot use via the command line alone and so you'll have to look into options for rendering graphics from a remote system.
+
+### Graphic programs on an HPC
+When you connect to a remote system using `ssh` use either the `-X` or `-Y` flag (by default they do the same thing), and this will enable X11 forwarding.
+This means that so long as you have an X11 client on your local machine (linux/Mac does, Windows see [here](https://stackoverflow.com/a/61110604/1710603)), the remote system will render graphics and then forward it to your local machine via ssh.
+Note that X11 forwarding will incur a high latency, so you'll get a degraded experience compared to running on your local machine, even for 'lite' applications like emacs or vim.
+Note also, that many HPC systems will either not have a local X11 server for you to connect to, or will disable the default port which is used to forward the X11 session.
+If this is the case, then your friendly HPC provider will likely have a visulization node that you can use for graphic programs.
+[Pawsey](https://support.pawsey.org.au/documentation/display/US/Visualisation+Documentation) provides a web-based remote desktop experience, as does [NCI](https://opus.nci.org.au/display/OOD/2.+VDI+App), while OzStar seems not to.
+
+
+### Graphic programs on a remote system (which you control)
+An excellent tool for connecting to a computer that you own/control without having to deal with X11 forwarding, is [NoMachine](https://www.nomachine.com/).
+NoMachine (or NX) is free to install and use, and the server/client can be run on any Win/Mac/Linux system with ease.
+The graphics forwarding uses a protocol different from X11, which has been optimized to provide low (-er) latency. 
+Using NX, you can easily set up a service on your work desktop machine, which you can then log into via your laptop or home computer.
+So as long as you have a reasonable internet connection, you do not need to duplicate your work / environment on multiple systems.
