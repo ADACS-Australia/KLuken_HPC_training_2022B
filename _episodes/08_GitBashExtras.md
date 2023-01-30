@@ -13,9 +13,38 @@ keypoints:
 ## Git
 Discuss various [git workflows](https://www.atlassian.com/git/tutorials/comparing-workflows):
 - centralised
-- branching
+- feature branch
 - gitflow
 - forking
+
+### Centralized workflow
+In this workflow there is a single repository (usually the one on GitHub) is designated as the central repository.
+When people want to make changes to the repo they pull the current version, make their changes and then push back to the central repo.
+This style works well if you have only a few developers who do not work on similar parts of the code at the same time, so the expectation for conflicts is very low.
+This method is simple to understand and easy to work with.
+If you are the sole developer/user of your repository then this is probably how you will work.
+
+### Feature branching workflow
+Similar to the centralized workflow except that when changes are going to be made to the repo a developer will create a branch to work on those changes.
+As a feature is being developed changes will often break the functionality of the software so keeping all these changes in a branch separate from `main` will mean that there is always a 'known working' version of the code that people can use.
+You could consider the local copies of a repo in the centralized workflow to have a similar purpose to the branches in the feature branching workflow.
+However, a key difference is that by having the branches stored in the repository, you can have multiple people seeing and working on these branches.
+Another difference is that you can make a different branch for each feature, and have multiple features being developed at the same time.
+
+Consider the case where you are working on a new feature for your code.
+You pull the main branch from the centralized workflow and start developing that feature.
+As you are part way through you find a bug that needs to be fixed in the code.
+You now either have to make that bug fix part of the feature development, meaning that you cant push it back to the main repository until your development is complete, or you have to discard your development in order to fix the bug, before retuning.
+Now consider how this would work if you used a feature branching workflow.
+You make a new branch from `main` for `feature-1` and start working on it.
+You notice a bug in the main code so you create a new branch from `main` called `bugfix-1`.
+You fix the bug in `bugfix-1` and then merge it back to `main` and then also to `feature-1` (possibly using a `merge rebase main`).
+You can now return to developing on `feature-1` without having to backtrack.
+
+GitHub 
+
+### 
+
 
 Note that:
 - forking = cloning
@@ -517,5 +546,5 @@ echo "File ${imfile} is ${x} by ${y} pixels in size"
   - `ssh -Y user@host`
   - not a good idea for login nodes
   - use a visualisation node (if available) or a worker node
-  - some HPC provide a web based remote desktop experience for this
+  - some HPC provide a web based remote desktop experience for this with lower latency
 - link/discuss nomachine
