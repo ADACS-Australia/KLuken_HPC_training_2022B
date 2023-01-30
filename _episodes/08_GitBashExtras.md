@@ -23,6 +23,7 @@ When people want to make changes to the repo they pull the current version, make
 This style works well if you have only a few developers who do not work on similar parts of the code at the same time, so the expectation for conflicts is very low.
 This method is simple to understand and easy to work with.
 If you are the sole developer/user of your repository then this is probably how you will work.
+![CentralizedWorkflow](https://wac-cdn.atlassian.com/dam/jcr:0869c664-5bc1-4bf2-bef0-12f3814b3187/01.svg?cdnVersion=714)
 
 ### Feature branching workflow
 Similar to the centralized workflow except that when changes are going to be made to the repo a developer will create a branch to work on those changes.
@@ -41,9 +42,15 @@ You notice a bug in the main code so you create a new branch from `main` called 
 You fix the bug in `bugfix-1` and then merge it back to `main` and then also to `feature-1` (possibly using a `merge rebase main`).
 You can now return to developing on `feature-1` without having to backtrack.
 
+
+![FeatureBranching](https://wac-cdn.atlassian.com/dam/jcr:09308632-38a3-4637-bba2-af2110629d56/07.svg?cdnVersion=745)
+
 GitHub 
 
-### 
+### GitFlow
+
+
+![GitFlow](https://wac-cdn.atlassian.com/dam/jcr:34c86360-8dea-4be4-92f7-6597d4d5bfae/02%20Feature%20branches.svg?cdnVersion=714)
 
 
 Note that:
