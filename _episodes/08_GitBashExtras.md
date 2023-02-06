@@ -79,26 +79,68 @@ This workflow is very good for working in teams as it will allow you to more eas
 When working in a team, rules or guides for branch names, testing and documentation requirements, and coding style, should all be agreed on and ideally documented within the repository itself.
 
 ### Forking a repository
+GitHub introduces an action that is similar to branching which is forking.
+When forking a repository, you are making a copy of that repository into an account that you have write permissions for, but *also* making a link between the forked version and the original (upstream) version.
 
 ![ForkingWorkflow](https://wac-cdn.atlassian.com/dam/jcr:642c56e3-ddc6-43ff-ab86-c5cd845afd05/03.svg?cdnVersion=714)
 
-Note that:
-- forking = cloning
-- sync a project to two repositories
-  - `git remote add alt <url>`
-  - `git fetch alt`
-  - `git push alt/branch`
+Forking a repository is a way of creating your own version to work on in instances where you don't have permission to create new branches.
+You can make changes to the repository, test them out and deploy your work, and then submit a pull request back into the original (upstream) repository without needing any permissions from the repo owner.
+
+When working on a fork of a repository, you'll also have the option to pull changes from the upstream into your version so that you can stay in sync.
+
+When working with a forked repository you'll potentially have two remote repositories that you wish to push/pull changes to/from.
+In order to connect your local repository to the upstream repo, you have to add the link manually via:
+
+```
+git remote add upstream https://github.com/<aUser>/<aRepo.git>
+```
+{: .language-bash}
+
+Now when you want to fetch changes you can do: 
+```
+git fetch upstream
+```
+{: .language-bash}
+to fetch changes from the upstream repo or similarly:
+```
+git fetch origin
+```
+{: .langauge-bash}
+to fetch changes from the forked repo.
+
+Note that that, since git is natively decentralized, you can add as many remote repositories as you wish, and pull/push from any of them (respecting permissions).
+For example, you can have your repository hosted on github with one url, and a mirror of your repo hosted privately or elsewhere at another url.
+To do this you just add additional `remotes` to your repo and then specify your target when doing `git pull` or `git push`.
+It is common to see sites like github used as a public facing repository for software, with development branches being created in a (private)  repository hosted elsewhere, and updates to the github version of the code only occur when releases are made.
+For example, see https://github.com/postgres/postgres. 
 
 
-### CI/CD
-- writing tests with pytest
-- running tests locally
-- running tests on github
-- auto documentation with sphinx
-  - docstrings -> api
-  - .md / .rst -> html
-- auto-doc on github
-  - readthedocs.io on merge into main
+## Continuous Integration / Delivery (CI/CD)
+Probably the most useful CI/CD for researcher who code (or [RSE](https://rse-aunz.github.io/)s) is the ability to have your code and documentation built and tested whenever you push changes to your github repository.
+
+Automated testing and documentation with [GitHub actions](https://docs.github.com/en/actions) requires that you first have some testing or documentation in place.
+
+See the lesson [Document Test Package](https://adacs-australia.github.io/MAP21A-Training-JCarlin/01-Document-Test-Package/index.html) from the ADACS [Collaborative Code development](https://adacs-australia.github.io/MAP21A-Training-JCarlin/) workshop for details on how to make and run tests using pytest and how to run them locally.
+In order to run the tests on GitHub you'll need to create a workflow description file in a special directory `.github/workflows`.
+Whilst this can be done from your local machine, the easiest way to create a workflow is using a template on the GitHub actions page.
+
+To create a new workflow go to the actions page for your repository and select "New workflow".
+
+![NewWorkflow]({{page.root}}{% link fig/NewAction.png %})
+
+As you'll see on this page there are a lot of pre-made workflows for a range of languages and for different purposes.
+We will select the "Python Package" workflow (not the anaconda one though).
+If you don't see the tile on your page then search for "python test".
+Once you locate the example workflow you should press "configure"
+
+![PythonPackage]({{page.root}}{% link fig/PythonPackage.png %})
+
+You'll be presented with a page that is editing a new file called `python-package.yml` in the directory `.github/workflows/`.
+
+If you repository has a `requirements.txt` that holds all your dependencies, and your tests are run using `pytest` then you won't have much to change in this example workflow.
+You can change which branches the workflow will run on (main/dev/*), and if you want it to run when people push to that branch or only when a pull request is made.
+You can make multiple workflows which have different trigger conditions so that, for example, pushing to `dev` will install and test all code, whilst making a pull requests into `main` will also build the documentation and be much more strict with the linting options.
 
 
 ## Bash (and other unix shells)
