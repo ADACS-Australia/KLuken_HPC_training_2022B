@@ -120,7 +120,7 @@ When developing this course I had some example job scripts that had lines that l
 ```
 {: .language-bash}
 
-These scripts worked for me, however they will not work as inteded for others because I have hardcoded the output/error directories to **my** work directory.
+These scripts worked for me, however they will not work as intended for others because I have hardcoded the output/error directories to **my** work directory.
 What I want to do is replace instances of `/phancock/` with `/%u/` so that SLURM will replace the `%u` with the username of whoever is running the script.
 To achieve this I firstly need to find all instances of the pattern `/phancock/`, and for this I use grep:
 ```
@@ -222,7 +222,7 @@ By default both of these streams will be displayed in your terminal, however the
 - redirection of STDERR with `2>`
   - example: `find . 2> /dev/null` will send all error messages to `/dev/null` (an information black hole)
   - example: `echo "Warning: Things are bad" >&2` will send the message to STDERR instead of STDOUT
-  - example: `my_script.sh > ouptut.txt 2> log.txt` will save STDOUT into `output.txt` and STDERR into `log.txt`
+  - example: `my_script.sh > output.txt 2> log.txt` will save STDOUT into `output.txt` and STDERR into `log.txt`
   - example: `my_script.sh 2>&1 > all.txt` will redirect STDERR to STDOUT (`2>&1`) and then send both to the file `all.txt`
 
 
@@ -231,7 +231,7 @@ By default both of these streams will be displayed in your terminal, however the
   - If you need to do multiple pipes then process substitution can be handy
     - `
 - process substitution with `>( )`
-  - example: `my_script.sh > ouptut.txt 2> >(grep -e "^Warn" > warnings.txt)` will save STDERR to `warnings.txt` but only after passing it through `grep`.
+  - example: `my_script.sh > output.txt 2> >(grep -e "^Warn" > warnings.txt)` will save STDERR to `warnings.txt` but only after passing it through `grep`.
 
 When a bash command completes it will return an exit code.
 By convention 0 means "success" and anything else means "error".

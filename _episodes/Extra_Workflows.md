@@ -10,6 +10,8 @@ keypoints:
 - "Practice makes better"
 ---
 
+Article about different [workflow managers](https://www.nature.com/articles/s41598-021-99288-8).
+
 ## Workflow planning
 - how to plan / structure a workflow
   - logical flow of work 
