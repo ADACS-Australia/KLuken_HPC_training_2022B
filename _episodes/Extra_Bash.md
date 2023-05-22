@@ -3,11 +3,13 @@ title: "Advanced Bash"
 teaching: 15
 exercises: 15
 questions:
-- "What other training is available?"
+- "What tools are available in bash?"
+- "How can I write bash scripts?"
 objectives:
-- "Give feedback on training"
+- "Understand that bash is a programming language"
+- "Learn some of the builtin unix tools"
 keypoints:
-- "Practice makes better"
+- "Use the tools best suited for a job"
 ---
 
 ## Bash (and other unix shells)

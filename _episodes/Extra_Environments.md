@@ -3,11 +3,13 @@ title: "Managing Environments"
 teaching: 15
 exercises: 15
 questions:
-- "What other training is available?"
+- "What is an environment?"
+- "How and why do I need to manage environments?"
+- "How can I run graphic programs on a remote system?"
 objectives:
-- "Give feedback on training"
+- "Understand how to manage bash and python environments"
 keypoints:
-- "Practice makes better"
+- "Environments help avoid dependency hell"
 ---
 
 ## environment management
