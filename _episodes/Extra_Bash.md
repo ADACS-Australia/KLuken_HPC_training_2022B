@@ -1,7 +1,7 @@
 ---
 title: "Advanced Bash"
-teaching: 15
-exercises: 15
+teaching: 90
+exercises: 0
 questions:
 - "What tools are available in bash?"
 - "How can I write bash scripts?"

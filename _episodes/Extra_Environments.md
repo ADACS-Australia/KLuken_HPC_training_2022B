@@ -1,7 +1,7 @@
 ---
 title: "Managing Environments"
-teaching: 15
-exercises: 15
+teaching: 30
+exercises: 0
 questions:
 - "What is an environment?"
 - "How and why do I need to manage environments?"
