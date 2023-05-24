@@ -106,7 +106,7 @@ to fetch changes from the upstream repo or similarly:
 ```
 git fetch origin
 ```
-{: .langauge-bash}
+{: .language-bash}
 to fetch changes from the forked repo.
 
 Note that that, since git is natively decentralized, you can add as many remote repositories as you wish, and pull/push from any of them (respecting permissions).
@@ -114,6 +114,42 @@ For example, you can have your repository hosted on github with one url, and a m
 To do this you just add additional `remotes` to your repo and then specify your target when doing `git pull` or `git push`.
 It is common to see sites like github used as a public facing repository for software, with development branches being created in a (private)  repository hosted elsewhere, and updates to the github version of the code only occur when releases are made.
 For example, see https://github.com/postgres/postgres. 
+
+## Using two remote locations
+Git is designed as a decentralized version control system meaning that there is no default single source of truth.
+GitHub has become for many people a central repo that everyone interacts with, but this is just in practice and such a mode of operation is not enforced.
+
+By default your git repository will be connected to zero or one remote repo, depending on how you created your repo (init, vs clone).
+```
+git remote -v
+```
+{: .language-bash}
+
+```
+origin  git@github.com:ADACS-Australia/KLuken_HPC_training_2022B.git (fetch)
+origin  git@github.com:ADACS-Australia/KLuken_HPC_training_2022B.git (push)
+```
+{: output}
+```
+git remote add other git@github.com:PaulHancock/redesigned-succotash.git
+git push other
+```
+{: .language-bash}
+```
+Enumerating objects: 676, done.
+Counting objects: 100% (676/676), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (659/659), done.
+Writing objects: 100% (676/676), 3.52 MiB | 1.78 MiB/s, done.
+Total 676 (delta 291), reused 241 (delta 10)
+remote: Resolving deltas: 100% (291/291), done.
+To github.com:PaulHancock/redesigned-succotash.git
+ * [new branch]      gh-pages -> gh-pages
+```
+{: output}
+
+In the above you now have two places that you can push to or pull from.
+One of the (remote) will be the default, and if you want to use the other you'll have to be explicit:
 
 
 ## Continuous Integration / Delivery (CI/CD)
