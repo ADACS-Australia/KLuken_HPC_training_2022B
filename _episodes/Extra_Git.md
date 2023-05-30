@@ -3,19 +3,42 @@ title: "Advanced Git"
 teaching: 15
 exercises: 15
 questions:
-- "What other training is available?"
+- "How should I work with Git?"
+- "How can I connect to multiple repositories?"
+- "What do all the options on the GitHub pull request mean?"
 objectives:
-- "Give feedback on training"
+- "Understand branching and git workflows"
+- "Understand merge options on GitHub"
+- "Learn how to connect to multiple remotes"
 keypoints:
-- "Practice makes better"
+- "Choose a workflow that suits your project"
 ---
 
-## Git
-Discuss various [git workflows](https://www.atlassian.com/git/tutorials/comparing-workflows):
-- centralised
-- feature branch
-- gitflow
-- forking
+## [Git workflows](https://www.atlassian.com/git/tutorials/comparing-workflows)
+
+Git is the most commonly used version control system today.
+A Git workflow is a recipe or recommendation for how to use Git to accomplish work in a consistent and productive manner.
+Git workflows encourage developers and DevOps teams to leverage Git effectively and consistently.
+Git offers a lot of flexibility in how users manage changes.
+Given Git's focus on flexibility, *there is no standardized process on how to interact with Git*.
+When working with a team on a Git-managed project, it’s important to make sure the team is all in agreement on how the flow of changes will be applied.
+To ensure the team is on the same page, an agreed-upon Git workflow should be developed or selected.
+There are several publicized Git workflows that may be a good fit for your team.
+Here, we will discuss some of these Git workflow options.
+In this section we'll discuss a few different ways to use git.
+We refer to these as a process or workflow which you incorporate into your existing work habits.
+
+
+> ## What makes a workflow successful?
+> When evaluating a workflow for your team, it's most important that you consider your team’s culture.
+> You want the workflow to enhance the effectiveness of your team and not be a burden that limits productivity.
+> Some things to consider when evaluating a Git workflow are:
+> 
+> - Does this workflow scale with team size?
+> - Is it easy to undo mistakes and errors with this workflow?
+> - Does this workflow impose any new unnecessary cognitive overhead to the team?
+{: .callout}
+
 
 ### Centralized workflow
 In this workflow there is a single repository (usually the one on GitHub) is designated as the central repository.
@@ -115,6 +138,58 @@ To do this you just add additional `remotes` to your repo and then specify your 
 It is common to see sites like github used as a public facing repository for software, with development branches being created in a (private)  repository hosted elsewhere, and updates to the github version of the code only occur when releases are made.
 For example, see https://github.com/postgres/postgres. 
 
+## Merging branches
+The main thing that trips people up when working with git is the potential for there to be conflicts when you are trying to merge branches, or when you are trying to push/pull from a remote.
+The golden rule of merge conflict resolution is that **avoidance is better than a cure**.
+
+> ## Reducing Conflicts
+> If you find yourself resolving a lot of conflicts in a project,
+> consider these technical approaches to reducing them:
+> 
+> - Pull from upstream more frequently, especially before starting new work
+> - Use topic branches to segregate work, merging to main when complete
+> - Make smaller, more atomic commits
+> - Where logically appropriate, break large files into smaller ones so that it is
+  less likely that two authors will alter the same file simultaneously
+> 
+> Conflicts can also be minimized with project management strategies:
+> 
+> - Clarify who is responsible for what areas with your collaborators
+> - Discuss what order tasks should be carried out in with your collaborators so
+>   that tasks expected to change the same lines won't be worked on simultaneously
+> - If the conflicts are stylistic churn (e.g. tabs vs. spaces), establish a
+>   project convention that is governing and use code style tools (e.g.
+>   `htmltidy`, `perltidy`, `rubocop`, etc.) to enforce, if necessary
+{: .callout}
+
+Now with all that said, conflicts will still occur and it's important to not get disheartened when they do.
+Dealing with conflicts from the command line can be tedious and error prone.
+Using an IDE to help you through the process can make things a LOT simpler.
+
+### merge vs rebase
+When you have resolved all your conflicts and are ready to merge your branches there are a few options.
+It is recommended that you use the pull request feature on Github to complete the merge process as it'll give you a run down of weather the merge is possible, give other developers the opportunity to comment or approve the merge, and for any automated testing to be completed (see [below](#continuous-integration--delivery-cicd)).
+
+Once you get the green button that says "Merge pull request" there are a few options to consider:
+![Merge Options]({{page.root}}{%link fig/GitHubMergeOptions.png%})
+
+The options are
+- Create a merge commit
+  - All of your commits will be added to the main branch, with a new commit generated to indicate a merge took place
+- Squash and merge
+  - All the commits from the feature branch will be applied as a single (large) commit on the main branch
+  - Breaks our rule of thumb "make many small commits" but removes a lot of the "bug fix?" type commits you might make to a feature branch
+- Rebase and merge
+  - History is rewritten
+  - All your commits to the feature branch are un-applied
+  - The commits on the main branch are applied to your feature branch
+  - Then all the feature branch commits are re-applied
+
+The question of "which option should I take", the recommendation is just the default "merge commit".
+If you are pedantic about having a 'nice' looking history then squash/rebase might be better for you
+
+
+
 ## Using two remote locations
 Git is designed as a decentralized version control system meaning that there is no default single source of truth.
 GitHub has become for many people a central repo that everyone interacts with, but this is just in practice and such a mode of operation is not enforced.
@@ -149,7 +224,8 @@ To github.com:PaulHancock/redesigned-succotash.git
 {: output}
 
 In the above you now have two places that you can push to or pull from.
-One of the (remote) will be the default, and if you want to use the other you'll have to be explicit:
+One of the (remote) will be the default, and if you want to use the other you'll have to be explicit about where to push/pull from.
+While it is possible to set up git so that your push operations will go to both repos at the same time, it is not recommended.
 
 
 ## Continuous Integration / Delivery (CI/CD)
