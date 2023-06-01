@@ -1,11 +1,14 @@
 ---
 title: "Constructing Containers"
-teaching: 15
-exercises: 15
+teaching: 120
+exercises: 0
 questions:
-- "What other training is available?"
+- "How do I build containers?"
+- "How do I plan a container build?"
+- "Should I use multiple containers?"
 objectives:
-- "Summarize and recap the lessons"
+- "Understand that container building process"
+- "Understand how containers communicate with each other"
 keypoints:
 - "Practice makes better"
 ---
