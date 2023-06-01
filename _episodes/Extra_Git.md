@@ -1,7 +1,7 @@
 ---
 title: "Advanced Git"
-teaching: 15
-exercises: 15
+teaching: 120
+exercises: 0
 questions:
 - "How should I work with Git?"
 - "How can I connect to multiple repositories?"
