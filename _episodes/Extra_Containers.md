@@ -425,7 +425,7 @@ This means that you can create docker images on your local machine, test and dev
 > > Image Format: squashfs
 > > Docker Image: test:latest
 > >
-> > Inspected Size: 882 MB
+> > Inspected Size: 974 MB
 > >
 > > (1/10) Creating a build sandbox...
 > > (2/10) Exporting filesystem...
@@ -438,13 +438,13 @@ This means that you can create docker images on your local machine, test and dev
 > > (9/10) Building squashfs container...
 > > INFO:    Starting build...
 > > INFO:    Creating SIF file...
-> > INFO:    Build complete: /tmp/test_latest-2023-05-29-806deabcb504.simg
+> > INFO:    Build complete: /tmp/test_latest-2023-06-06-806deabcb504.simg
 > > (10/10) Moving the image to the output folder...
 > >     306,089,984 100%  368.07MB/s    0:00:00 (xfr#1, to-chk=0/1)
 > > Final Size: 292MB
 > > ~~~
 > > {: .output}
-> > Note the name of the image will be `test_latest-2023-05-29-806deabcb504.simg` which you can rename.
+> > Note the name of the image will be `test_latest-2023-06-06-806deabcb504.simg` which you can rename.
 > > ~~~
 > > sudo chown ${USER} -R test
 > > mv test/[long name].simg test.sif
@@ -482,27 +482,19 @@ Singularity offers multiple ways to interact with a container:
 > 4. Try the singularity run/exec/shell commands on your container
 > 
 > 
-> > ## Example on gadi
+> > ## Example on ozstar
 > > ~~~
-> > scp test.sif gadi-dm.nci.org.au:/scratch/vp91/pjh562/.
+> > scp test.sif ozstar:/fred/oz983/phancock/.
 > > ssh gadi
-> > module load singularity
-> > singularity exec test.sif sky_sim.py
+> > module load apptainer/latest
+> > singularity exec -B $PWD:/app test.sif sky_sim.py
 > > ~~~
 > > {: .language-bash}
 > > ~~~
 > > Wrote catalog.csv
 > > ~~~
 > > {: .output}
-> > If we run `ls` then you'll see the catalog.csv file in the local directory.
-> > This is because NCI have set up an automatic binding of the local directory to the working directory within singularity.
-> > Thanks NCI!
-> >
-> > If this wasn't the case we could create the binding like this.
-> > ~~~
-> > singularity exec -B $PWD:/app test.sif sky_sim.py
-> > ~~~
-> > {: .language-bash}
+> > If we run `ls` then you should see the `catalog.csv` file in the local directory.
 > >
 > > ~~~
 > > singularity shell test.sif
@@ -570,4 +562,3 @@ Getting the containers to talk to each other is then managed by specifying which
 [Docker-compose](https://docs.docker.com/get-started/08_using_compose/) is a common solution that allows you to specify these connections in a configuration file.
 In the above example all the containers would be running persistently waiting for user input.
 Such a configuration is often not required for scientific workflows.
-
