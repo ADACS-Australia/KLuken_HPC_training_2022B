@@ -485,7 +485,7 @@ Singularity offers multiple ways to interact with a container:
 > > ## Example on ozstar
 > > ~~~
 > > scp test.sif ozstar:/fred/oz983/phancock/.
-> > ssh gadi
+> > ssh ozstar
 > > module load apptainer/latest
 > > singularity exec -B $PWD:/home/phancock test.sif sky_sim.py
 > > ~~~
