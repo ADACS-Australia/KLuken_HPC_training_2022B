@@ -150,7 +150,16 @@ Depending on which of the above is having the biggest impact there are different
   - One way to reduce the total amount of time waiting in the queue is to have fewer jobs to submit, so packing jobs as per the above could help
   - Schedulers typically find it easier to schedule shorter jobs or jobs that require fewer resources so consider reducing the wall time, cpu, RAM requested
 
-Let's review an [example report]({{page.root}}{%link files/Beamforming.html%}) to see which tasks fit into different categories above.
+> ## Example analysis
+> Let's review an [example report]({{page.root}}{%link files/Beamforming.html%}) to see which tasks fit into different categories above.
+> There are examples of processes which:
+> - spend most of their time in the SLURM queue
+> - have a start/finishing time longer than execution time
+> - request more time than is required
+>
+> See if you can identify an example of each.
+> 
+{: .challenge}
 
 Finally, once you have decided that there is not much more down time in your NextFlow workflow, you should start looking at how to optimize the code within each of the processes.
 Optimization of general codes is beyond this workshop, however [this workshop](https://adacs-australia.github.io/2023-03-20-Coding-Best-Practices-Workshop/) has lessons on testing, benchmarking, profiling, optimization, and parallel computing (in Python).
