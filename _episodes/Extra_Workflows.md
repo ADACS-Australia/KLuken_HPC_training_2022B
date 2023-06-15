@@ -10,11 +10,24 @@ keypoints:
 - "Practice makes better"
 ---
 
-Article about different [workflow managers](https://www.nature.com/articles/s41598-021-99288-8).
+## Background
+This lesson assumes knowledge from the [NextFlow workshop](https://carpentries-incubator.github.io/Pipeline_Training_with_Nextflow/) run previously by ADACS.
+In the previous lesson we focused mostly on:
+- What is a workflow?
+- What is NextFlow?
+- How to use NextFlow to create a workflow
+- How to use configurations to make a workflow portable and re-usable
+- How to make a workflow user friendly
+
+In this lesson we'll be focusing more on how you plan a workflow.
+We'll be using NextFlow as our reference language, but much of what we cover here is applicable to other workflow managers.
+
+
+<!-- Article about different [workflow managers](https://www.nature.com/articles/s41598-021-99288-8). -->
 
 ## Workflow planning
-- how to plan / structure a workflow
-  - logical flow of work 
+- How to plan / structure a workflow
+  - Logical flow of work 
   - practical considerations
   - breaking a process into multiple smaller processes
   - merging small processes into one larger one
